@@ -171,6 +171,7 @@
       <button data-tab="sell" class="on">SELL</button><button data-tab="rod">RODS</button>
       <button data-tab="hook">HOOKS</button><button data-tab="bait">BAIT</button>
       <button data-tab="travel">TRAVEL</button><button data-tab="basket">BASKET</button>
+      <button data-tab="bestiary">BESTIARY</button><button data-tab="quests">QUESTS</button>
       <button data-tab="awards">AWARDS</button>
     </div>
     <div class="pbody" id="pbody"></div>
@@ -238,8 +239,8 @@
 <script>
 "use strict";
 /* ============================================================
-   LILYPAD LAKE — MEGA UPDATE v3
-   Fixed MP (full sync) • Touch • Gamepad • Name/Control select
+   LILYPAD LAKE — LONG TERM PROGRESSION EXPANSION
+   Sequential Lakes • Mythical Fish • Bestiary • Quests
    ============================================================ */
 
 /* ---------------- utils ---------------- */
@@ -298,36 +299,25 @@ const RAR=[
  {n:'UNCOMMON',c:'#59d17a',w:45,aff:.6},
  {n:'RARE',c:'#5ab3f0',w:14,aff:1.6},
  {n:'EPIC',c:'#b06cf0',w:4.5,aff:3},
- {n:'LEGENDARY',c:'#ffb545',w:1.4,aff:5}];
+ {n:'LEGENDARY',c:'#ffb545',w:1.4,aff:5},
+ {n:'MYTHICAL',c:'#ff8ae2',w:0.02,aff:10}];
 
 const LAKE_THEMES = [
   { id:'lilypad', name:'Lilypad Lake', cost:0, grass:['#5da63a','#69b844'], sand:'#e6d49b', water:['#3f8fd4','#3a86c9','#357cbe','#3072b2','#2b68a5','#275e97'], tree:'#2c6b3a', treeLight:'#3e8948', treeHighlight:'#63c05e', path:'#c9a86b', pathDark:'#a9884f' },
-  { id:'driftwood', name:'Driftwood Shallows', cost:400, grass:['#d8c28a','#e6d49b'], sand:'#f0e0ac', water:['#4ab3e0','#45add9','#40a7d2','#3ba1cb','#369bc4','#3195bd'], tree:'#8a6238', treeLight:'#a87c4f', treeHighlight:'#c9a86b', path:'#e6d49b', pathDark:'#c9a86b' },
-  { id:'emberfall', name:'Emberfall Lake', cost:1200, grass:['#b85a2a','#c96a3a'], sand:'#a85a2a', water:['#3a6b8a','#356685','#306180','#2b5c7b','#265776','#215271'], tree:'#d95a2a', treeLight:'#e87a4a', treeHighlight:'#f09a6a', path:'#8a5a34', pathDark:'#6e4a2a' },
-  { id:'frostmere', name:'Frostmere Basin', cost:3000, grass:['#d0e0e8','#e0f0f8'], sand:'#c0d0d8', water:['#2a5a7a','#255575','#205070','#1b4b6b','#164666','#114161'], tree:'#e0f0f8', treeLight:'#ffffff', treeHighlight:'#ffffff', path:'#a0b0b8', pathDark:'#809098' }
+  { id:'driftwood', name:'Driftwood Shallows', cost:1000, grass:['#d8c28a','#e6d49b'], sand:'#f0e0ac', water:['#4ab3e0','#45add9','#40a7d2','#3ba1cb','#369bc4','#3195bd'], tree:'#8a6238', treeLight:'#a87c4f', treeHighlight:'#c9a86b', path:'#e6d49b', pathDark:'#c9a86b' },
+  { id:'emberfall', name:'Emberfall Lake', cost:10000, grass:['#b85a2a','#c96a3a'], sand:'#a85a2a', water:['#3a6b8a','#356685','#306180','#2b5c7b','#265776','#215271'], tree:'#d95a2a', treeLight:'#e87a4a', treeHighlight:'#f09a6a', path:'#8a5a34', pathDark:'#6e4a2a' },
+  { id:'frostmere', name:'Crystal Cove', cost:50000, grass:['#d0e0e8','#e0f0f8'], sand:'#c0d0d8', water:['#2a5a7a','#255575','#205070','#1b4b6b','#164666','#114161'], tree:'#e0f0f8', treeLight:'#ffffff', treeHighlight:'#ffffff', path:'#a0b0b8', pathDark:'#809098' }
+];
+
+const LAKE_REQS = [
+  { lake: 0, cost: 0, reqLake: -1, reqCatches: 0 },
+  { lake: 1, cost: 1000, reqLake: 0, reqCatches: 15 },
+  { lake: 2, cost: 10000, reqLake: 1, reqCatches: 30 },
+  { lake: 3, cost: 50000, reqLake: 2, reqCatches: 50 }
 ];
 
 function generateFishDB() {
   const FISH = [];
-  const baseFish = [
-    {id:'minnow',name:'Minnow',rar:0,w0:.1,w1:.3,val:4,diff:.2,len:13,h:5,cols:['#7fae8f','#bfe3c9','#eef7e9','#9fc7ae'],pat:'none',bait:0},
-    {id:'bluegill',name:'Bluegill',rar:0,w0:.2,w1:.6,val:8,diff:.26,len:15,h:8,cols:['#3e6f8a','#6fa3b8','#e8d9a8','#d98a4a'],pat:'spots',bait:0},
-    {id:'perch',name:'Yellow Perch',rar:0,w0:.3,w1:.9,val:10,diff:.3,len:17,h:8,cols:['#7a8a2f','#c9b45a','#efe0a0','#c9803a'],pat:'stripes',bait:0},
-    {id:'sunfish',name:'Sunfish',rar:0,w0:.2,w1:.5,val:7,diff:.24,len:14,h:9,cols:['#b06a2a','#e8a54a','#f7e3b0','#d9573a'],pat:'none',bait:0},
-    {id:'bass',name:'Largemouth Bass',rar:1,w0:.8,w1:2.6,val:24,diff:.5,len:22,h:10,cols:['#2f5a34','#5a8a4a','#cfe3b0','#3a6e3f'],pat:'stripe',bait:0},
-    {id:'carp',name:'Common Carp',rar:1,w0:1.4,w1:4.2,val:32,diff:.55,len:26,h:11,cols:['#8a6a2f','#c9a25a','#efe0b0','#a87c3a'],pat:'scales',bait:0},
-    {id:'catfish',name:'Catfish',rar:1,w0:1.2,w1:3.6,val:30,diff:.5,len:24,h:10,cols:['#4a5560','#7a8894','#cfd6da','#5a6672'],pat:'whiskers',bait:0},
-    {id:'trout',name:'Rainbow Trout',rar:2,w0:.8,w1:2.4,val:58,diff:.62,len:23,h:9,cols:['#4a7a8a','#8ab4c9','#f0e8e0','#e87a8a'],pat:'rainbow',bait:1},
-    {id:'pike',name:'Northern Pike',rar:2,w0:2,w1:6.5,val:75,diff:.7,len:30,h:8,cols:['#3a5a2f','#6a8a3f','#d8e0a8','#4a6e34'],pat:'spots',bait:1},
-    {id:'koi',name:'Koi',rar:2,w0:1,w1:3,val:88,diff:.5,len:20,h:10,cols:['#d9dcd8','#f2f0e8','#ffffff','#e8763a'],pat:'koi',bait:2},
-    {id:'mooneel',name:'Moon Eel',rar:3,w0:1.5,w1:4,val:150,diff:.78,len:32,h:5,cols:['#3a3a6e','#6a6aae','#b8b8ea','#8a8ad0'],pat:'glow',bait:2},
-    {id:'salmon',name:'Sapphire Salmon',rar:3,w0:2,w1:5.5,val:170,diff:.72,len:25,h:10,cols:['#2f4f8a','#4a7ac9','#cfe0f0','#d95763'],pat:'none',bait:2},
-    {id:'whisker',name:'Old Whisker',rar:4,w0:8,w1:14,val:430,diff:.85,len:31,h:13,cols:['#3a4048','#6a747e','#c8ced2','#4a545e'],pat:'whiskers',bait:3},
-    {id:'spiritkoi',name:'Spirit Koi',rar:4,w0:2,w1:4,val:540,diff:.8,len:21,h:10,cols:['#c9b8e8','#efe8fa','#ffffff','#f0c04a'],pat:'glow',bait:3},
-    {id:'ancient',name:'The Ancient One',rar:4,w0:14,w1:26,val:920,diff:.95,len:34,h:12,cols:['#2f3a44','#5a6e7a','#aebcc4','#465a66'],pat:'armor',bait:3}
-  ];
-  baseFish.forEach(f => { f.lake = 0; f.time = 'any'; FISH.push(f); });
-
   const prefixes = ['Lilypad','Driftwood','Ember','Frost','Moon','Sun','Shadow','Ghost','Crystal','Ruby','Emerald','Sapphire','Diamond','Onyx','Pearl','Coral','Amber','Jade','Opal','Topaz','Amethyst','Garnet','Aquamarine','Golden','Silver','Bronze','Copper','Iron','Steel','Mythril','Dragon','Spirit','Ancient','Giant','Tiny','Spotted','Striped','Glowing','Sleeping','Angry','Happy','Lucky','Cursed','Blessed','Royal','Knight','King','Queen','Prince','Princess','Lord','Lady','Sir','Madam','Captain','Pirate','Ninja','Samurai','Wizard','Witch','Mage','Cleric','Rogue','Thief','Hunter','Ranger','Druid','Shaman','Monk','Paladin','Warrior','Barbarian','Bard','Minstrel','Jester'];
   const suffixes = ['Fin','Tail','Scale','Gill','Eye','Tooth','Claw','Wing','Horn','Spike','Shell','Pearl','Coral','Amber','Jade','Opal','Topaz','Amethyst','Garnet','Aquamarine','Bass','Trout','Pike','Koi','Salmon','Carp','Catfish','Perch','Sunfish','Eel','Tuna','Ray','Shark','Swordfish','Marlin','Goldfish','Guppy','Tetra','Angelfish','Clownfish','Puffer','Betta','Molly','Platy','Swordtail','Gourami','Danio','Loach','Pleco','Cory','Barb','Rasbora','Goby','Blenny','Dart','Skimmer','Glider','Snapper','Ray','Whisker'];
   const patterns = ['none','spots','stripes','stripe','scales','koi','rainbow','whiskers','armor','glow'];
@@ -338,6 +328,9 @@ function generateFishDB() {
     ['#d9dcd8','#f2f0e8','#ffffff','#e8763a'],['#3a3a6e','#6a6aae','#b8b8ea','#8a8ad0'],['#2f4f8a','#4a7ac9','#cfe0f0','#d95763'],
     ['#3a4048','#6a747e','#c8ced2','#4a545e'],['#c9b8e8','#efe8fa','#ffffff','#f0c04a'],['#2f3a44','#5a6e7a','#aebcc4','#465a66']
   ];
+  
+  const baseVals = [15, 80, 400, 2500, 15000];
+
   for(let lakeIdx=0;lakeIdx<4;lakeIdx++){
     for(let i=0;i<25;i++){
       const rar = i<10?0:(i<16?1:(i<21?2:(i<24?3:4)));
@@ -347,10 +340,19 @@ function generateFishDB() {
       const pat = patterns[(lakeIdx*25+i)%patterns.length];
       const len = 12+rar*4+(i%5), h = 4+rar*2+(i%3);
       const w0 = 0.2+rar*1.5+(i%4)*0.5, w1 = w0+1.5+rar*2.5;
-      const val = 5+rar*25+i*3, diff = 0.2+rar*0.15;
+      const val = baseVals[rar] + (i * 15 * (rar + 1));
+      const diff = 0.2+rar*0.15;
       const time = (i%5===0)?'night':((i%7===0)?'day':'any');
-      FISH.push({id:`gen_${lakeIdx}_${i}`,name:`${pre} ${suf}`,rar,w0,w1,val,diff,len,h,cols,pat,bait:Math.min(4,rar),lake:lakeIdx,time});
+      FISH.push({id:`gen_${lakeIdx}_${i}`,name:`${pre} ${suf}`,rar,w0,w1,val,diff,len,h,cols,pat,bait:Math.min(6,rar+1),lake:lakeIdx,time});
     }
+    
+    const mythics = [
+      {id:'mythic_0', name:'Ancient Lilypad Leviathan', lake:0, rar:5, w0:15, w1:25, val:100000, diff:0.99, len:45, h:15, cols:['#2f3a44','#5a6e7a','#aebcc4','#465a66'], pat:'armor', bait:4},
+      {id:'mythic_1', name:'Driftwood Ghost Ray', lake:1, rar:5, w0:20, w1:35, val:500000, diff:0.99, len:50, h:12, cols:['#e0e0e0','#ffffff','#a0a0a0','#505050'], pat:'glow', bait:5},
+      {id:'mythic_2', name:'Eternal Ember Serpent', lake:2, rar:5, w0:30, w1:50, val:2000000, diff:0.99, len:55, h:10, cols:['#ff3300','#ff7700','#ffcc00','#550000'], pat:'glow', bait:6},
+      {id:'mythic_3', name:'Crystal Sea Guardian', lake:3, rar:5, w0:50, w1:80, val:10000000, diff:0.99, len:60, h:18, cols:['#00ffff','#00aaff','#ffffff','#0055aa'], pat:'armor', bait:7}
+    ];
+    FISH.push(mythics[lakeIdx]);
   }
   return FISH;
 }
@@ -361,18 +363,24 @@ const RODS=[
  {name:'Twig Rod',cap:2,cost:0,col:'#a87c4f',desc:'A humble stick and string.'},
  {name:'Oak Rod',cap:5,cost:140,col:'#c98a3d',desc:'Sturdy oak — handles heavier fish.'},
  {name:'Carbon Rod',cap:12,cost:520,col:'#4a6a8a',desc:'Whippy carbon. Big-fish rated.'},
- {name:'Dragonbone Rod',cap:40,cost:1600,col:'#9a5ae0',desc:'Legendary flex. Nothing snaps this.'}];
+ {name:'Dragonbone Rod',cap:40,cost:1600,col:'#9a5ae0',desc:'Legendary flex. Nothing snaps this.'},
+ {name:'Ember Rod',cap:80,cost:8000,col:'#ff5500',desc:'Forged in volcanic heat.'},
+ {name:'Crystal Rod',cap:150,cost:25000,col:'#00ffff',desc:'Resonates with ancient magic.'}];
 const HOOKS=[
  {name:'Rusty Hook',hold:2.2,decay:1.0,cost:0,col:'#8a6a4a',desc:'Barely holds on.'},
  {name:'Steel Hook',hold:3.4,decay:.8,cost:110,col:'#9fb0bd',desc:'Holds longer, slips less.'},
  {name:'Silver Hook',hold:4.8,decay:.6,cost:480,col:'#e2eaf0',desc:'Fish struggle to shake it.'},
- {name:'Mythril Hook',hold:6.6,decay:.42,cost:1400,col:'#7fe0d0',desc:'Once bitten, never escapes.'}];
+ {name:'Mythril Hook',hold:6.6,decay:.42,cost:1400,col:'#7fe0d0',desc:'Once bitten, never escapes.'},
+ {name:'Lava Hook',hold:8.5,decay:.3,cost:6000,col:'#ff3300',desc:'Cauterizes the wound.'},
+ {name:'Crystal Hook',hold:12.0,decay:.15,cost:20000,col:'#aaffff',desc:'Perfectly balanced.'}];
 const BAITS=[
  {name:'No Bait',mult:1,luck:0,cost:0,desc:'Bare hook. Junk and small fry.', minRar:0, junk:true},
  {name:'Worm',mult:.8,luck:1,cost:15,desc:'Faster bites, better fish.', minRar:0, junk:true},
  {name:'Cricket',mult:.6,luck:2,cost:45,desc:'Rare fish start showing up.', minRar:1, junk:false},
  {name:'Firefly',mult:.45,luck:3,cost:110,desc:'Epic catches glow to it.', minRar:2, junk:false},
- {name:'Gilded Lure',mult:.32,luck:4,cost:280,desc:'The legends bite. No junk!', minRar:3, junk:false}];
+ {name:'Gilded Lure',mult:.32,luck:4,cost:280,desc:'The legends bite. No junk!', minRar:3, junk:false},
+ {name:'Magma Lure',mult:.25,luck:5,cost:800,desc:'Attracts deep ember beasts.', minRar:4, junk:false},
+ {name:'Crystal Worm',mult:.2,luck:6,cost:2500,desc:'Mythical entities crave this.', minRar:4, junk:false}];
 const BASKETS=[
   {name:'Wicker Creel',cap:24,cost:0},
   {name:'Angler Pack',cap:48,cost:500},
@@ -381,18 +389,27 @@ const BASKETS=[
 ];
 const ACHIEVEMENTS = [
   { id:'first', name:'First Catch', desc:'Catch your first fish.', check:()=>G.caught>=1 },
-  { id:'rich', name:'Getting Rich', desc:'Have 1000g.', check:()=>G.money>=1000 },
+  { id:'rich', name:'Getting Rich', desc:'Have 10,000g.', check:()=>G.money>=10000 },
   { id:'legend', name:'Legendary!', desc:'Catch a Legendary fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===4) },
+  { id:'mythic', name:'Mythical Angler', desc:'Catch a Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5) },
   { id:'traveler', name:'World Traveler', desc:'Own all 4 lake permits.', check:()=>G.permits.filter(p=>p).length===4 },
   { id:'nightowl', name:'Night Owl', desc:'Catch a night fish.', check:()=>G.nightCatches>0 },
   { id:'snowbird', name:'Snow Bird', desc:'Catch a fish in the snow.', check:()=>G.snowCatches>0 },
   { id:'social', name:'Fishing Buddies', desc:'Play multiplayer.', check:()=>G.mpPlayed>0 }
 ];
+const QUESTS = [
+  {id:'q1', name:'Novice Angler', desc:'Catch 10 fish in Lilypad Lake.', check:()=>G.lakeCatches[0]>=10, reward:200},
+  {id:'q2', name:'Driftwood Regular', desc:'Catch 25 fish in Driftwood Shallows.', check:()=>G.lakeCatches[1]>=25, reward:1500},
+  {id:'q3', name:'Emberlake Explorer', desc:'Catch 25 fish in Emberfall Lake.', check:()=>G.lakeCatches[2]>=25, reward:10000},
+  {id:'q4', name:'Crystal Seeker', desc:'Catch 25 fish in Crystal Cove.', check:()=>G.lakeCatches[3]>=25, reward:50000},
+  {id:'q5', name:'Mythical Hunter', desc:'Catch any Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5), reward:100000},
+];
 
 /* ---------------- state ---------------- */
-let G={money:25,rod:0,hook:0,baits:[0,0,0,0],baitEq:0,basket:[],disc:[],caught:0,lake:0,
+let G={money:25,rod:0,hook:0,baits:[0,0,0,0,0,0,0],baitEq:0,basket:[],disc:[],caught:0,lake:0,
   permits:[true,false,false,false],basketCap:24,weather:'clear',achievements:{},
-  nightCatches:0,snowCatches:0,mpPlayed:0,name:'',control:''};
+  nightCatches:0,snowCatches:0,mpPlayed:0,name:'',control:'',
+  lakeCatches:[0,0,0,0], quests:{}};
 let started=false,panelOpen=false,popupOpen=false,curTab='sell';
 let weatherTimer = 60;
 
@@ -427,7 +444,9 @@ function buildSprites(){
    px([".........","..ppp....",".p...p...",".p....p..","..p...p..","...ppp...",".........",".........","........."]),
    px([".........","..jj.....",".jjjj....","jjjjjj...",".Jjjjjjj.","..J..J.J.",".........",".........","........."]),
    px([".........","...cc....","..cwwc...","..wkkw...","...yy....","...yy....",".........",".........","........."]),
-   px([".........","..YY.....",".YYYY....",".YY.Y....","....YY...","....ss...",".....s...","....ss...","........."])];
+   px([".........","..YY.....",".YYYY....",".YY.Y....","....YY...","....ss...",".....s...","....ss...","........."]),
+   px([".........","..rr.....",".rrrr....",".rr.r....","....rr...","....ss...",".....s...","....ss...","........."]),
+   px([".........","..ww.....",".wwww....",".ww.w....","....ww...","....ss...",".....s...","....ss...","........."])];
   SPR.junk={};
   SPR.junk.boot=px(["...ll.......","...ll.......","...ll.......","...ll.......","...xl.......","...ll.......","...llll.....","...llllll...","..llllllll..","..LLLLLLLL..","..LLLLLLLL..","............"]);
   SPR.junk.can=px(["..mmmmmm....",".mMMMMMMm...",".mrrrrm.....",".mrrrrm.....",".mrrrrm.....",".mMMMMMMm...","..mmmmmm....","............"]);
@@ -539,7 +558,7 @@ function genMap(){
   tryPlace(12,1.6,(x,y,r)=>entities.push({k:'bush',x:x*16+8,y:y*16+8,r:r}));
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     if(map[y][x].t==='sand'){let near=false;
-      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;
+      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[-1,0]]){const nx=x+dx,ny=y+dy;
         if(nx>=0&&ny>=0&&nx<MW&&ny<MH&&map[ny][nx].t==='water')near=true;}
       if(near&&rng()<.28)entities.push({k:'cattail',x:x*16+4+rng()*8,y:y*16+6+rng()*6,ph:rng()*6});}}
   entities.push({k:'mara',x:MAT.x*16+8,y:SHOP.y*TS+SHOP.h*TS-6});
@@ -640,7 +659,7 @@ function rollFish(luck){
   const isNight = dayInfo().night > 0.5;
   const isSnow = G.weather === 'snow';
   const isRain = G.weather === 'rain';
-  let junkC = bait.junk ? [.32,.12,.08,.05,.03][baitTier] : 0;
+  let junkC = bait.junk ? [.32,.12,.08,.05,.03,.01,.01][baitTier] : 0;
   if(isSnow) junkC = 0;
   if(R()<junkC){
      const j=JUNK[(R()*JUNK.length)|0];
@@ -650,18 +669,19 @@ function rollFish(luck){
   let minRar = bait.minRar || 0;
   if(isSnow) minRar = Math.max(minRar, 2);
   pool = pool.filter(f => f.rar >= minRar);
-  if(pool.length === 0) pool = FISH.filter(f => f.rar >= minRar);
+  if(pool.length === 0) pool = FISH.filter(f => f.rar >= minRar && f.lake === G.lake);
   let tot=0;
   const ws=pool.map(f=>{
      let w = RAR[f.rar].w * (1 + luck * RAR[f.rar].aff);
      if(isRain) w *= 0.5;
      if(isSnow && f.rar >= 3) w *= 2.0;
+     if(f.rar === 5) w *= 0.1; // Mythical extremely rare
      tot+=w; return w;});
   let r=R()*tot,pick=pool[0];
   for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0){pick=pool[i];break;}}
   const exp=Math.max(.6,1.25-luck*.1),w=pick.w0+(pick.w1-pick.w0)*Math.pow(R(),exp);
   const t=(w-pick.w0)/(pick.w1-pick.w0);
-  return {id:pick.id,sp:pick,name:pick.name,w,val:Math.max(1,Math.round(pick.val*(.7+.6*t))),diff:pick.diff,rar:pick.rar};}
+  return {id:pick.id,sp:pick,name:pick.name,w,val:Math.max(1,Math.round(pick.val*(.7+.6*t))),diff:pick.diff,rar:pick.rar,lake:pick.lake};}
 function hookFish(){
   if(!fishing||fishing.state!=='bite'||mini)return;
   const bob=fishing;
@@ -748,10 +768,13 @@ function endMini(result,msg){
   splash(bx,by,10);
   if(result==='catch'&&f){
     sfx.catch();
+    if(f.rar === 5) { sfx.catch(); toast(`★ MYTHICAL CATCH: ${f.name} ★`, '#ff8ae2'); mpBroadcast({t:'mythic',d:{name:G.name,fish:f.name}}); }
     const isNew=!G.disc.includes(f.id);
     if(isNew)G.disc.push(f.id);
     G.basket.push({id:f.id,name:f.name,w:f.w,val:f.val,rar:f.rar,junk:!!f.junk});
     G.caught++;
+    if(f.lake !== undefined && G.lakeCatches[f.lake] !== undefined) G.lakeCatches[f.lake]++;
+    else G.lakeCatches[G.lake]++;
     if(dayInfo().night > 0.5) G.nightCatches++;
     if(G.weather === 'snow') G.snowCatches++;
     addFloat(player.x,player.y-24,'CAUGHT!','#ffd679');
@@ -1029,7 +1052,8 @@ function setTab(t){curTab=t;
   const body=$('pbody');body.innerHTML='';body.scrollTop=0;
   if(t==='sell')buildSell(body);if(t==='rod')buildGear(body,'rod');
   if(t==='hook')buildGear(body,'hook');if(t==='bait')buildBait(body);
-  if(t==='travel')buildTravel(body);if(t==='basket')buildBasket(body);if(t==='awards')buildAwards(body);
+  if(t==='travel')buildTravel(body);if(t==='basket')buildBasket(body);
+  if(t==='bestiary')buildBestiary(body);if(t==='quests')buildQuests(body);if(t==='awards')buildAwards(body);
   $('pfBest').textContent=`Bestiary ${G.disc.length}/${FISH.length}`;
   $('pfCaught').textContent=`Lifetime catch: ${G.caught}`;}
 function drawFishIcon(c,id,junk){
@@ -1118,16 +1142,30 @@ function applyLake(i,silent){
 function buildTravel(body){
   for(let i=0;i<LAKE_THEMES.length;i++){
     const lake=LAKE_THEMES[i];
+    const req = LAKE_REQS[i];
     const owned=G.permits[i];
     const isHere=G.lake===i;
     const card=document.createElement('div');
     card.className='card'+(isHere?' cur':'');
-    card.innerHTML=`<div class="info"><div class="cname">${lake.name}</div><div class="cstat">${owned?'Permit Owned':'Permit: '+lake.cost+'g'}</div></div>`;
+    
+    let reqText = '';
+    let canUnlock = true;
+    
+    if(i > 0) {
+       const prevOwned = G.permits[req.reqLake];
+       const prevCatches = G.lakeCatches[req.reqLake] || 0;
+       if(!prevOwned) { canUnlock = false; reqText += `Requires: ${LAKE_THEMES[req.reqLake].name} Permit<br>`; }
+       if(prevCatches < req.reqCatches) { canUnlock = false; reqText += `Requires: ${req.reqCatches} ${LAKE_THEMES[req.reqLake].name} fish (${prevCatches}/${req.reqCatches})<br>`; }
+       if(G.money < req.cost) { canUnlock = false; reqText += `Requires: ${req.cost}g<br>`; }
+    }
+
+    card.innerHTML=`<div class="info"><div class="cname">${lake.name}</div><div class="cstat">${owned?'Permit Owned':(reqText || 'Free')}</div></div>`;
+    
     if(!owned&&!isHere){
       const b=document.createElement('button');
       b.className='btn gold';b.textContent=lake.cost+'g';
-      b.disabled=G.money<lake.cost;
-      b.onclick=()=>{G.money-=lake.cost;G.permits[i]=true;sfx.buy();checkAchievements();save();setTab('travel');};
+      b.disabled=!canUnlock;
+      b.onclick=()=>{if(!canUnlock)return; G.money-=lake.cost;G.permits[i]=true;sfx.buy();checkAchievements();save();setTab('travel');};
       card.appendChild(b);
     }else if(owned&&!isHere){
       const b=document.createElement('button');
@@ -1156,6 +1194,74 @@ function buildBasket(body){
     }else{
       const tag=document.createElement('div');tag.className='tag own';tag.textContent='OWNED';card.appendChild(tag);}
     body.appendChild(card);}}
+function buildBestiary(body){
+  for(let lakeIdx=0; lakeIdx<LAKE_THEMES.length; lakeIdx++){
+    const lakeName = LAKE_THEMES[lakeIdx].name;
+    const header = document.createElement('div');
+    header.className='empty';
+    header.style.padding='10px';
+    header.style.marginTop='10px';
+    header.style.background='#4a3018';
+    header.style.color='#ffd679';
+    header.textContent = lakeName;
+    body.appendChild(header);
+
+    const lakeFish = FISH.filter(f => f.lake === lakeIdx);
+    for(const f of lakeFish){
+       const discovered = G.disc.includes(f.id);
+       const row = document.createElement('div');
+       row.className = 'baitrow';
+       
+       const icon = cnv(18,18);
+       const x = icon.getContext('2d');
+       if(discovered){
+          x.imageSmoothingEnabled=false;
+          x.drawImage(SPR.fish[f.id],0,0,18,18);
+       } else {
+          x.fillStyle='#171008'; x.fillRect(0,0,18,18);
+          x.fillStyle='#4a4238'; x.font='10px monospace'; x.fillText('?', 6, 13);
+       }
+       row.appendChild(icon);
+
+       const info = document.createElement('div');
+       info.className='info';
+       const nm = document.createElement('div');
+       nm.className='bname';
+       nm.textContent = discovered ? f.name : '???';
+       nm.style.color = discovered ? RAR[f.rar].c : '#8a7a5e';
+       info.appendChild(nm);
+
+       const ds = document.createElement('div');
+       ds.className='bdesc';
+       ds.textContent = discovered ? `${RAR[f.rar].n} • ${f.val}g` : 'Undiscovered Species';
+       info.appendChild(ds);
+
+       row.appendChild(info);
+       body.appendChild(row);
+    }
+  }
+}
+function buildQuests(body){
+  for(const q of QUESTS){
+    const done = G.quests[q.id] === 'completed';
+    const ready = !done && q.check();
+    const row=document.createElement('div');
+    row.className='baitrow'+(done?' eq':'');
+    row.innerHTML=`<div class="info"><div class="bname">${done?'✅ ':''}${q.name}</div><div class="bdesc">${q.desc} (Reward: ${q.reward}g)</div></div>`;
+    if(ready){
+       const b=document.createElement('button');
+       b.className='btn gold'; b.textContent='CLAIM';
+       b.onclick=()=>{
+          G.money += q.reward;
+          G.quests[q.id] = 'completed';
+          sfx.coin(); toast(`Quest Complete: ${q.name} (+${q.reward}g)`, '#ffd679');
+          save(); updateHUD(); setTab('quests');
+       };
+       row.appendChild(b);
+    }
+    body.appendChild(row);
+  }
+}
 function buildAwards(body){
   for(const a of ACHIEVEMENTS){
     const unlocked=G.achievements[a.id];
@@ -1170,25 +1276,21 @@ function checkAchievements(){
       toast(`🏆 ${a.name}`,'#ffd679');
       sfx.catch();}}}
 
-/* ---------------- save / load (with v1 migration) ---------------- */
-function save(){try{localStorage.setItem('lilypad.v2',JSON.stringify({...G,muted,
+/* ---------------- save / load (Reset for Expansion) ---------------- */
+const SAVE_KEY = 'lilypad.v3';
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({...G,muted,
   px:Math.round(player.x),py:Math.round(player.y)}));}catch(e){}}
 function load(){try{
-  let s=JSON.parse(localStorage.getItem('lilypad.v2'));
-  if(!s){ // migrate old save so nothing is lost
-    const old=JSON.parse(localStorage.getItem('lilypad.v1'));
-    if(old&&typeof old.money==='number'){
-      s={...old,lake:0,permits:[true,false,false,false],basketCap:24,weather:'clear',
-         achievements:{},nightCatches:0,snowCatches:0,mpPlayed:0,name:'',control:''};
-      localStorage.setItem('lilypad.v2',JSON.stringify(s));
-      setTimeout(()=>toast('Old save restored! 💰','#9fd0a8'),1500);}}
+  let s=JSON.parse(localStorage.getItem(SAVE_KEY));
   if(s&&typeof s.money==='number'){
     Object.assign(G,{money:s.money,rod:s.rod,hook:s.hook,
       baits:s.baits,baitEq:s.baitEq,basket:s.basket,disc:s.disc,caught:s.caught,
       lake:s.lake||0,permits:s.permits||[true,false,false,false],basketCap:s.basketCap||24,
       weather:s.weather||'clear',achievements:s.achievements||{},
       nightCatches:s.nightCatches||0,snowCatches:s.snowCatches||0,mpPlayed:s.mpPlayed||0,
-      name:s.name||'',control:s.control||''});
+      name:s.name||'',control:s.control||'',
+      lakeCatches:s.lakeCatches||[0,0,0,0],quests:s.quests||{}});
+    while(G.baits.length < BAITS.length) G.baits.push(0);
     if(s.px)player.x=s.px;if(s.py)player.y=s.py;
     muted=!!s.muted;$('muteBtn').textContent=muted?'♪ OFF':'♪ ON';}
 }catch(e){}}
@@ -1275,6 +1377,7 @@ function mpHandle(conn,d){
       toast(`${f.name} caught ${f.fish}!`,col);
       if(f.rar>=2)sfx.catch();}
       break;
+    case 'mythic': toast(`★ ${d.d.name} caught a MYTHICAL ${d.d.fish}! ★`, '#ff8ae2'); sfx.catch(); break;
     case 'bye': MP.players.delete(d.d.id); break;
   }}
 
@@ -1674,8 +1777,11 @@ $('mpHost').addEventListener('click',mpHost);
 $('mpJoin').addEventListener('click',()=>mpJoin($('mpCode').value));
 $('mpLeave').addEventListener('click',mpLeave);
 (()=>{const tf=$('titleFish');
-  for(const id of['trout','koi','bass']){const img=new Image();
-    img.src=SPR.fish[id].toDataURL();img.width=SPR.fish[id].width*3;tf.appendChild(img);}})();
+  for(const id of['trout','koi','bass']){
+    const f = FISH.find(x=>x.id===id);
+    if(!f) continue;
+    const img=new Image();
+    img.src=SPR.fish[f.id].toDataURL();img.width=SPR.fish[f.id].width*3;tf.appendChild(img);}})();
 if(document.fonts&&document.fonts.load)document.fonts.load('8px "Press Start 2P"');
 function startGame(){
   if(started)return;
