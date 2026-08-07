@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Lilypad Lake — a tiny fishing life</title>
+<title>Lilypad Lake — Full Fishing Adventure</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -39,7 +39,7 @@
   /* ---------- Panels ---------- */
   .overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(8,12,20,.55)}
   .panel{background:#2a1c10;border:4px solid #171008;box-shadow:0 6px 0 #171008, inset 0 0 0 3px #6e4a2a, inset 0 0 0 6px #241708;
-    color:#f6ead0;width:min(620px,94vw);max-height:90vh;display:flex;flex-direction:column}
+    color:#f6ead0;width:min(640px,94vw);max-height:90vh;display:flex;flex-direction:column}
   .phead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:3px solid #171008;background:#33220f}
   .phead h2{font-family:'Press Start 2P',monospace;font-size:12px;color:#ffd679;text-shadow:0 2px 0 #171008;line-height:1.6}
   .pclose{background:#5a3a20;border:3px solid #171008;box-shadow:0 3px 0 #171008;color:#f6ead0;font-family:'Press Start 2P',monospace;
@@ -47,7 +47,7 @@
   .pclose:hover{filter:brightness(1.25)} .pclose:active{transform:translateY(2px);box-shadow:0 1px 0 #171008}
   .tabs{display:flex;gap:6px;padding:10px 14px 0;background:#33220f;flex-wrap:wrap}
   .tabs button{flex:1;background:#4a3018;border:3px solid #171008;border-bottom:none;color:#c9a86b;font-family:'Press Start 2P',monospace;
-    font-size:8px;padding:9px 4px;cursor:pointer;min-width:56px}
+    font-size:8px;padding:9px 4px;cursor:pointer;min-width:48px}
   .tabs button.on{background:#2a1c10;color:#ffd679;box-shadow:inset 0 3px 0 #ffd679}
   .tabs button:hover{color:#ffe9b0}
   .pbody{padding:14px;overflow-y:auto;min-height:280px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -86,6 +86,12 @@
   .baitrow .bname{font-family:'Press Start 2P',monospace;font-size:9px;color:#ffe9b0}
   .baitrow .bdesc{font-size:11px;color:#c9a86b;margin-top:3px;line-height:1.4}
   .baitrow .bown{font-family:'Press Start 2P',monospace;font-size:9px;color:#9fd0a8;width:46px;text-align:center;flex:none}
+
+  /* Bestiary Grid */
+  .bestiary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px}
+  .b-slot{background:#33220f;border:3px solid #171008;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .b-slot canvas{image-rendering:pixelated}
+  .b-slot .b-name{font-family:'Press Start 2P',monospace;font-size:7px;color:#c9a86b;text-align:center;line-height:1.4;height:18px}
 
   /* ---------- Catch card ---------- */
   #catchCard .cc{background:#2a1c10;border:4px solid #171008;box-shadow:0 6px 0 #171008,inset 0 0 0 3px #6e4a2a;
@@ -144,7 +150,13 @@
   #mpUI .mp-btns{display:flex;gap:4px}
   #mpUI .mp-btns .btn{flex:1;font-size:8px;padding:6px}
   #mpUI #mpLeave{font-size:8px;padding:6px;width:100%}
+  #mpUI #mpGift{font-size:8px;padding:6px;width:100%}
   #mpStatus{font-family:'Press Start 2P';font-size:7px;color:#9fd0a8;text-align:center;margin-top:2px}
+
+  /* Gift Modal */
+  #giftModal .panel{width:min(400px,92vw)}
+  .gift-item{background:#33220f;border:3px solid #171008;padding:10px;margin-bottom:8px;cursor:pointer}
+  .gift-item:hover{border-color:#ffd679}
 </style>
 </head>
 <body>
@@ -152,6 +164,7 @@
 
 <div id="hud">
   <div class="chip" id="chipMoney"></div>
+  <div class="chip" id="chipLvl"></div>
   <div class="chip" id="chipBait"></div>
   <div class="chip" id="chipRod"></div>
   <div class="chip" id="chipHook"></div>
@@ -171,7 +184,7 @@
       <button data-tab="sell" class="on">SELL</button><button data-tab="rod">RODS</button>
       <button data-tab="hook">HOOKS</button><button data-tab="bait">BAIT</button>
       <button data-tab="travel">TRAVEL</button><button data-tab="basket">BASKET</button>
-      <button data-tab="bestiary">BESTIARY</button><button data-tab="quests">QUESTS</button>
+      <button data-tab="quests">QUESTS</button><button data-tab="book">BOOK</button>
       <button data-tab="awards">AWARDS</button>
     </div>
     <div class="pbody" id="pbody"></div>
@@ -188,6 +201,14 @@
     <div id="ccInfo">1.0 kg • worth 10g</div>
     <div id="ccNew" class="hidden">★ NEW SPECIES ★</div>
     <div class="ccHint">E / CLICK / ✕ / A</div>
+  </div>
+</div>
+
+<!-- GIFT MODAL -->
+<div id="giftModal" class="overlay hidden">
+  <div class="panel">
+    <div class="phead"><h2>SEND GIFT</h2><button class="pclose" id="giftClose">ESC</button></div>
+    <div class="pbody" id="giftBody"></div>
   </div>
 </div>
 
@@ -233,14 +254,15 @@
     <button class="btn" id="mpJoin">JOIN</button>
   </div>
   <button class="btn" id="mpLeave">LEAVE</button>
+  <button class="btn gold" id="mpGift">SEND GIFT</button>
   <div id="mpStatus">OFFLINE</div>
 </div>
 
 <script>
 "use strict";
 /* ============================================================
-   LILYPAD LAKE — LONG TERM PROGRESSION EXPANSION
-   Sequential Lakes • Mythical Fish • Bestiary • Quests
+   LILYPAD LAKE — MEGA ADVENTURE EXPANSION
+   Complete RPG Progression, 7 Biomes, 150+ Items, Quests, Mythicals
    ============================================================ */
 
 /* ---------------- utils ---------------- */
@@ -284,6 +306,7 @@ const sfx={
   bite:()=>{tone(880,.07,'square',.16);tone(1320,.09,'square',.16,0,.08);},
   tick:()=>tone(340,.03,'square',.045),
   catch:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.14,'square',.14,0,i*.09));},
+  mythical:()=>{[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.2,'square',.18,0,i*.12));},
   escape:()=>tone(320,.3,'sawtooth',.12,-180),
   snap:()=>{noiseBurst(.16,.3,3000);tone(180,.2,'sawtooth',.15,-120);},
   coin:()=>{tone(1150,.07,'square',.13);tone(1700,.1,'square',.13,0,.07);},
@@ -291,6 +314,7 @@ const sfx={
   err:()=>tone(160,.15,'square',.12,-40),
   whoosh:()=>noiseBurst(.18,.1,1400),
   run:()=>tone(200,.25,'sawtooth',.12,160),
+  levelup:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',.15,0,i*.1));}
 };
 
 /* ---------------- data ---------------- */
@@ -300,24 +324,40 @@ const RAR=[
  {n:'RARE',c:'#5ab3f0',w:14,aff:1.6},
  {n:'EPIC',c:'#b06cf0',w:4.5,aff:3},
  {n:'LEGENDARY',c:'#ffb545',w:1.4,aff:5},
- {n:'MYTHICAL',c:'#ff8ae2',w:0.02,aff:10}];
+ {n:'MYTHICAL',c:'#ff4d4d',w:0.01,aff:20}];
 
 const LAKE_THEMES = [
-  { id:'lilypad', name:'Lilypad Lake', cost:0, grass:['#5da63a','#69b844'], sand:'#e6d49b', water:['#3f8fd4','#3a86c9','#357cbe','#3072b2','#2b68a5','#275e97'], tree:'#2c6b3a', treeLight:'#3e8948', treeHighlight:'#63c05e', path:'#c9a86b', pathDark:'#a9884f' },
-  { id:'driftwood', name:'Driftwood Shallows', cost:1000, grass:['#d8c28a','#e6d49b'], sand:'#f0e0ac', water:['#4ab3e0','#45add9','#40a7d2','#3ba1cb','#369bc4','#3195bd'], tree:'#8a6238', treeLight:'#a87c4f', treeHighlight:'#c9a86b', path:'#e6d49b', pathDark:'#c9a86b' },
-  { id:'emberfall', name:'Emberfall Lake', cost:10000, grass:['#b85a2a','#c96a3a'], sand:'#a85a2a', water:['#3a6b8a','#356685','#306180','#2b5c7b','#265776','#215271'], tree:'#d95a2a', treeLight:'#e87a4a', treeHighlight:'#f09a6a', path:'#8a5a34', pathDark:'#6e4a2a' },
-  { id:'frostmere', name:'Crystal Cove', cost:50000, grass:['#d0e0e8','#e0f0f8'], sand:'#c0d0d8', water:['#2a5a7a','#255575','#205070','#1b4b6b','#164666','#114161'], tree:'#e0f0f8', treeLight:'#ffffff', treeHighlight:'#ffffff', path:'#a0b0b8', pathDark:'#809098' }
-];
-
-const LAKE_REQS = [
-  { lake: 0, cost: 0, reqLake: -1, reqCatches: 0 },
-  { lake: 1, cost: 1000, reqLake: 0, reqCatches: 15 },
-  { lake: 2, cost: 10000, reqLake: 1, reqCatches: 30 },
-  { lake: 3, cost: 50000, reqLake: 2, reqCatches: 50 }
+  { id:'driftwood', name:'Driftwood Lake', cost:0, reqLvl:1, reqFish:0, grass:['#5da63a','#69b844'], sand:'#e6d49b', water:['#3f8fd4','#3a86c9','#357cbe','#3072b2','#2b68a5','#275e97'], tree:'#2c6b3a', treeLight:'#3e8948', treeHighlight:'#63c05e', path:'#c9a86b', pathDark:'#a9884f' },
+  { id:'emberlake', name:'Emberlake', cost:25000, reqLvl:10, reqFish:50, grass:['#b85a2a','#c96a3a'], sand:'#a85a2a', water:['#3a6b8a','#356685','#306180','#2b5c7b','#265776','#215271'], tree:'#d95a2a', treeLight:'#e87a4a', treeHighlight:'#f09a6a', path:'#8a5a34', pathDark:'#6e4a2a' },
+  { id:'crystalcove', name:'Crystal Cove', cost:100000, reqLvl:20, reqFish:150, grass:['#7fd0ff','#a0e0ff'], sand:'#d0e0e8', water:['#2a5a7a','#255575','#205070','#1b4b6b','#164666','#114161'], tree:'#5ab3f0', treeLight:'#8ac8ee', treeHighlight:'#dff4ff', path:'#a0b0b8', pathDark:'#809098' },
+  { id:'shadowmarsh', name:'Shadow Marsh', cost:500000, reqLvl:30, reqFish:300, grass:['#2a1c10','#3a2c20'], sand:'#1a1208', water:['#1a0a0a','#150505','#100000','#050000','#000000','#000000'], tree:'#1a0a0a', treeLight:'#3a2c20', treeHighlight:'#4a3c30', path:'#2a1c10', pathDark:'#1a1208' },
+  { id:'frozenwaters', name:'Frozen Waters', cost:2000000, reqLvl:40, reqFish:500, grass:['#d0e0e8','#e0f0f8'], sand:'#c0d0d8', water:['#2a5a7a','#255575','#205070','#1b4b6b','#164666','#114161'], tree:'#e0f0f8', treeLight:'#ffffff', treeHighlight:'#ffffff', path:'#a0b0b8', pathDark:'#809098' },
+  { id:'ancientocean', name:'Ancient Ocean', cost:10000000, reqLvl:50, reqFish:800, grass:['#1a2a3a','#2a3a4a'], sand:'#3a4a5a', water:['#0a1a2a','#051520','#000510','#000000','#000000','#000000'], tree:'#0a1a2a', treeLight:'#1a2a3a', treeHighlight:'#2a3a4a', path:'#3a4a5a', pathDark:'#2a3a4a' },
+  { id:'mythicalzone', name:'Mythical Zone', cost:50000000, reqLvl:70, reqFish:1200, grass:['#ff4d4d','#c9302c'], sand:'#5a2a20', water:['#3a0a0a','#2a0505','#1a0000','#000000','#000000','#000000'], tree:'#ff4d4d', treeLight:'#ff8a70', treeHighlight:'#ffd679', path:'#5a2a20', pathDark:'#3a1a10' }
 ];
 
 function generateFishDB() {
   const FISH = [];
+  const baseFish = [
+    {id:'minnow',name:'Minnow',rar:0,w0:.1,w1:.3,val:4,diff:.2,len:13,h:5,cols:['#7fae8f','#bfe3c9','#eef7e9','#9fc7ae'],pat:'none',bait:0},
+    {id:'bluegill',name:'Bluegill',rar:0,w0:.2,w1:.6,val:8,diff:.26,len:15,h:8,cols:['#3e6f8a','#6fa3b8','#e8d9a8','#d98a4a'],pat:'spots',bait:0},
+    {id:'perch',name:'Yellow Perch',rar:0,w0:.3,w1:.9,val:10,diff:.3,len:17,h:8,cols:['#7a8a2f','#c9b45a','#efe0a0','#c9803a'],pat:'stripes',bait:0},
+    {id:'sunfish',name:'Sunfish',rar:0,w0:.2,w1:.5,val:7,diff:.24,len:14,h:9,cols:['#b06a2a','#e8a54a','#f7e3b0','#d9573a'],pat:'none',bait:0},
+    {id:'bass',name:'Largemouth Bass',rar:1,w0:.8,w1:2.6,val:24,diff:.5,len:22,h:10,cols:['#2f5a34','#5a8a4a','#cfe3b0','#3a6e3f'],pat:'stripe',bait:0},
+    {id:'carp',name:'Common Carp',rar:1,w0:1.4,w1:4.2,val:32,diff:.55,len:26,h:11,cols:['#8a6a2f','#c9a25a','#efe0b0','#a87c3a'],pat:'scales',bait:0},
+    {id:'catfish',name:'Catfish',rar:1,w0:1.2,w1:3.6,val:30,diff:.5,len:24,h:10,cols:['#4a5560','#7a8894','#cfd6da','#5a6672'],pat:'whiskers',bait:0},
+    {id:'trout',name:'Rainbow Trout',rar:2,w0:.8,w1:2.4,val:58,diff:.62,len:23,h:9,cols:['#4a7a8a','#8ab4c9','#f0e8e0','#e87a8a'],pat:'rainbow',bait:1},
+    {id:'pike',name:'Northern Pike',rar:2,w0:2,w1:6.5,val:75,diff:.7,len:30,h:8,cols:['#3a5a2f','#6a8a3f','#d8e0a8','#4a6e34'],pat:'spots',bait:1},
+    {id:'koi',name:'Koi',rar:2,w0:1,w1:3,val:88,diff:.5,len:20,h:10,cols:['#d9dcd8','#f2f0e8','#ffffff','#e8763a'],pat:'koi',bait:2},
+    {id:'mooneel',name:'Moon Eel',rar:3,w0:1.5,w1:4,val:150,diff:.78,len:32,h:5,cols:['#3a3a6e','#6a6aae','#b8b8ea','#8a8ad0'],pat:'glow',bait:2},
+    {id:'salmon',name:'Sapphire Salmon',rar:3,w0:2,w1:5.5,val:170,diff:.72,len:25,h:10,cols:['#2f4f8a','#4a7ac9','#cfe0f0','#d95763'],pat:'none',bait:2},
+    {id:'whisker',name:'Old Whisker',rar:4,w0:8,w1:14,val:430,diff:.85,len:31,h:13,cols:['#3a4048','#6a747e','#c8ced2','#4a545e'],pat:'whiskers',bait:3},
+    {id:'spiritkoi',name:'Spirit Koi',rar:4,w0:2,w1:4,val:540,diff:.8,len:21,h:10,cols:['#c9b8e8','#efe8fa','#ffffff','#f0c04a'],pat:'glow',bait:3},
+    {id:'ancient',name:'The Ancient One',rar:4,w0:14,w1:26,val:920,diff:.95,len:34,h:12,cols:['#2f3a44','#5a6e7a','#aebcc4','#465a66'],pat:'armor',bait:3},
+    {id:'m_leviathan',name:'Ancient Driftwood Leviathan',rar:5,w0:50,w1:120,val:100000,diff:1.5,len:40,h:15,cols:['#0a1a0a','#1a3a1a','#2a5a2a','#3a7a3a'],pat:'armor',bait:4}
+  ];
+  baseFish.forEach(f => { f.lake = 0; f.time = 'any'; FISH.push(f); });
+
   const prefixes = ['Lilypad','Driftwood','Ember','Frost','Moon','Sun','Shadow','Ghost','Crystal','Ruby','Emerald','Sapphire','Diamond','Onyx','Pearl','Coral','Amber','Jade','Opal','Topaz','Amethyst','Garnet','Aquamarine','Golden','Silver','Bronze','Copper','Iron','Steel','Mythril','Dragon','Spirit','Ancient','Giant','Tiny','Spotted','Striped','Glowing','Sleeping','Angry','Happy','Lucky','Cursed','Blessed','Royal','Knight','King','Queen','Prince','Princess','Lord','Lady','Sir','Madam','Captain','Pirate','Ninja','Samurai','Wizard','Witch','Mage','Cleric','Rogue','Thief','Hunter','Ranger','Druid','Shaman','Monk','Paladin','Warrior','Barbarian','Bard','Minstrel','Jester'];
   const suffixes = ['Fin','Tail','Scale','Gill','Eye','Tooth','Claw','Wing','Horn','Spike','Shell','Pearl','Coral','Amber','Jade','Opal','Topaz','Amethyst','Garnet','Aquamarine','Bass','Trout','Pike','Koi','Salmon','Carp','Catfish','Perch','Sunfish','Eel','Tuna','Ray','Shark','Swordfish','Marlin','Goldfish','Guppy','Tetra','Angelfish','Clownfish','Puffer','Betta','Molly','Platy','Swordtail','Gourami','Danio','Loach','Pleco','Cory','Barb','Rasbora','Goby','Blenny','Dart','Skimmer','Glider','Snapper','Ray','Whisker'];
   const patterns = ['none','spots','stripes','stripe','scales','koi','rainbow','whiskers','armor','glow'];
@@ -329,87 +369,139 @@ function generateFishDB() {
     ['#3a4048','#6a747e','#c8ced2','#4a545e'],['#c9b8e8','#efe8fa','#ffffff','#f0c04a'],['#2f3a44','#5a6e7a','#aebcc4','#465a66']
   ];
   
-  const baseVals = [15, 80, 400, 2500, 15000];
-
-  for(let lakeIdx=0;lakeIdx<4;lakeIdx++){
-    for(let i=0;i<25;i++){
-      const rar = i<10?0:(i<16?1:(i<21?2:(i<24?3:4)));
-      const pre = prefixes[(lakeIdx*25+i)%prefixes.length];
-      const suf = suffixes[(lakeIdx*25+i*3)%suffixes.length];
-      const cols = palettes[(lakeIdx*25+i)%palettes.length];
-      const pat = patterns[(lakeIdx*25+i)%patterns.length];
+  for(let lakeIdx=1;lakeIdx<7;lakeIdx++){
+    for(let i=0;i<30;i++){
+      const rar = i<10?0:(i<18?1:(i<23?2:(i<27?3:(i<29?4:5))));
+      if(rar===5 && lakeIdx<6) continue;
+      const pre = prefixes[(lakeIdx*30+i)%prefixes.length];
+      const suf = suffixes[(lakeIdx*30+i*3)%suffixes.length];
+      const cols = palettes[(lakeIdx*30+i)%palettes.length];
+      const pat = patterns[(lakeIdx*30+i)%patterns.length];
       const len = 12+rar*4+(i%5), h = 4+rar*2+(i%3);
       const w0 = 0.2+rar*1.5+(i%4)*0.5, w1 = w0+1.5+rar*2.5;
-      const val = baseVals[rar] + (i * 15 * (rar + 1));
-      const diff = 0.2+rar*0.15;
+      const val = (5+rar*25+i*3) * Math.pow(5, lakeIdx);
+      const diff = 0.2+rar*0.15+lakeIdx*0.05;
       const time = (i%5===0)?'night':((i%7===0)?'day':'any');
-      FISH.push({id:`gen_${lakeIdx}_${i}`,name:`${pre} ${suf}`,rar,w0,w1,val,diff,len,h,cols,pat,bait:Math.min(6,rar+1),lake:lakeIdx,time});
+      FISH.push({id:`gen_${lakeIdx}_${i}`,name:`${pre} ${suf}`,rar,w0,w1,val,diff,len,h,cols,pat,bait:Math.min(6,rar),lake:lakeIdx,time});
     }
-    
-    const mythics = [
-      {id:'mythic_0', name:'Ancient Lilypad Leviathan', lake:0, rar:5, w0:15, w1:25, val:100000, diff:0.99, len:45, h:15, cols:['#2f3a44','#5a6e7a','#aebcc4','#465a66'], pat:'armor', bait:4},
-      {id:'mythic_1', name:'Driftwood Ghost Ray', lake:1, rar:5, w0:20, w1:35, val:500000, diff:0.99, len:50, h:12, cols:['#e0e0e0','#ffffff','#a0a0a0','#505050'], pat:'glow', bait:5},
-      {id:'mythic_2', name:'Eternal Ember Serpent', lake:2, rar:5, w0:30, w1:50, val:2000000, diff:0.99, len:55, h:10, cols:['#ff3300','#ff7700','#ffcc00','#550000'], pat:'glow', bait:6},
-      {id:'mythic_3', name:'Crystal Sea Guardian', lake:3, rar:5, w0:50, w1:80, val:10000000, diff:0.99, len:60, h:18, cols:['#00ffff','#00aaff','#ffffff','#0055aa'], pat:'armor', bait:7}
-    ];
-    FISH.push(mythics[lakeIdx]);
   }
+  
+  FISH.push({id:'m_ember_serpent',name:'Eternal Ember Serpent',rar:5,w0:100,w1:250,val:500000,diff:1.8,len:45,h:16,cols:['#ff4500','#8b0000','#ffd700','#ff8c00'],pat:'glow',bait:5,lake:1,time:'any'});
+  FISH.push({id:'m_crystal_guardian',name:'Crystal Sea Guardian',rar:5,w0:200,w1:500,val:2000000,diff:2.0,len:50,h:18,cols:['#00ffff','#0080ff','#ffffff','#e0ffff'],pat:'armor',bait:5,lake:2,time:'any'});
+  FISH.push({id:'m_shadow_king',name:'Shadow Marsh King',rar:5,w0:300,w1:600,val:5000000,diff:2.2,len:55,h:20,cols:['#1a1a1a','#4a004a','#8a008a','#000000'],pat:'glow',bait:5,lake:3,time:'night'});
+  FISH.push({id:'m_frozen_leviathan',name:'Frozen Leviathan',rar:5,w0:500,w1:1000,val:10000000,diff:2.5,len:60,h:22,cols:['#e0ffff','#add8e6','#ffffff','#4682b4'],pat:'scales',bait:6,lake:4,time:'any'});
+  FISH.push({id:'m_ocean_king',name:'Forgotten Ocean King',rar:5,w0:1000,w1:2500,val:25000000,diff:3.0,len:70,h:25,cols:['#000080','#000050','#00ffff','#000000'],pat:'armor',bait:6,lake:5,time:'any'});
+  
   return FISH;
 }
 const FISH = generateFishDB();
 
 const JUNK=[{id:'boot',name:'Old Boot',val:1,w0:.4,w1:.9},{id:'can',name:'Rusty Can',val:2,w0:.1,w1:.2}];
-const RODS=[
- {name:'Twig Rod',cap:2,cost:0,col:'#a87c4f',desc:'A humble stick and string.'},
- {name:'Oak Rod',cap:5,cost:140,col:'#c98a3d',desc:'Sturdy oak — handles heavier fish.'},
- {name:'Carbon Rod',cap:12,cost:520,col:'#4a6a8a',desc:'Whippy carbon. Big-fish rated.'},
- {name:'Dragonbone Rod',cap:40,cost:1600,col:'#9a5ae0',desc:'Legendary flex. Nothing snaps this.'},
- {name:'Ember Rod',cap:80,cost:8000,col:'#ff5500',desc:'Forged in volcanic heat.'},
- {name:'Crystal Rod',cap:150,cost:25000,col:'#00ffff',desc:'Resonates with ancient magic.'}];
-const HOOKS=[
- {name:'Rusty Hook',hold:2.2,decay:1.0,cost:0,col:'#8a6a4a',desc:'Barely holds on.'},
- {name:'Steel Hook',hold:3.4,decay:.8,cost:110,col:'#9fb0bd',desc:'Holds longer, slips less.'},
- {name:'Silver Hook',hold:4.8,decay:.6,cost:480,col:'#e2eaf0',desc:'Fish struggle to shake it.'},
- {name:'Mythril Hook',hold:6.6,decay:.42,cost:1400,col:'#7fe0d0',desc:'Once bitten, never escapes.'},
- {name:'Lava Hook',hold:8.5,decay:.3,cost:6000,col:'#ff3300',desc:'Cauterizes the wound.'},
- {name:'Crystal Hook',hold:12.0,decay:.15,cost:20000,col:'#aaffff',desc:'Perfectly balanced.'}];
-const BAITS=[
- {name:'No Bait',mult:1,luck:0,cost:0,desc:'Bare hook. Junk and small fry.', minRar:0, junk:true},
- {name:'Worm',mult:.8,luck:1,cost:15,desc:'Faster bites, better fish.', minRar:0, junk:true},
- {name:'Cricket',mult:.6,luck:2,cost:45,desc:'Rare fish start showing up.', minRar:1, junk:false},
- {name:'Firefly',mult:.45,luck:3,cost:110,desc:'Epic catches glow to it.', minRar:2, junk:false},
- {name:'Gilded Lure',mult:.32,luck:4,cost:280,desc:'The legends bite. No junk!', minRar:3, junk:false},
- {name:'Magma Lure',mult:.25,luck:5,cost:800,desc:'Attracts deep ember beasts.', minRar:4, junk:false},
- {name:'Crystal Worm',mult:.2,luck:6,cost:2500,desc:'Mythical entities crave this.', minRar:4, junk:false}];
+
+function generateRods() {
+  const rods = [
+    {name:'Twig Rod',cap:2,cost:0,lvl:1,col:'#a87c4f',desc:'A humble stick and string.'},
+    {name:'Oak Rod',cap:5,cost:140,lvl:1,col:'#c98a3d',desc:'Sturdy oak — handles heavier fish.'},
+    {name:'Carbon Rod',cap:12,cost:520,lvl:3,col:'#4a6a8a',desc:'Whippy carbon. Big-fish rated.'},
+    {name:'Dragonbone Rod',cap:40,cost:1600,lvl:5,col:'#9a5ae0',desc:'Legendary flex. Nothing snaps this.'}
+  ];
+  const tiers = [
+    {pre:'Ember', col:'#d95a2a', costMul:50, capMul:1.5, lvl:10},
+    {pre:'Crystal', col:'#5ab3f0', costMul:500, capMul:2, lvl:20},
+    {pre:'Shadow', col:'#b06cf0', costMul:5000, capMul:3, lvl:30},
+    {pre:'Frozen', col:'#63b6ea', costMul:50000, capMul:4, lvl:40},
+    {pre:'Ancient', col:'#ffb545', costMul:500000, capMul:6, lvl:50},
+    {pre:'Mythic', col:'#ff4d4d', costMul:5000000, capMul:10, lvl:70}
+  ];
+  const suff = ['Rod','Branch','Pole','Cane','Staff','Wand','Scepter','Blade'];
+  tiers.forEach((t, ti) => {
+    for(let i=0; i<8; i++) {
+      const cap = Math.ceil((10 + ti*10 + i*5) * t.capMul);
+      const cost = Math.ceil((1000 * Math.pow(1.8, i)) * t.costMul);
+      const lvl = t.lvl + i;
+      rods.push({name:`${t.pre} ${suff[i]}`, cap, cost, lvl, col:t.col, desc:`Tier ${ti+2} fishing rod.`});
+    }
+  });
+  return rods;
+}
+
+function generateHooks() {
+  const hooks = [
+    {name:'Rusty Hook',hold:2.2,decay:1.0,cost:0,lvl:1,col:'#8a6a4a',desc:'Barely holds on.'},
+    {name:'Steel Hook',hold:3.4,decay:.8,cost:110,lvl:1,col:'#9fb0bd',desc:'Holds longer, slips less.'},
+    {name:'Silver Hook',hold:4.8,decay:.6,cost:480,lvl:3,col:'#e2eaf0',desc:'Fish struggle to shake it.'},
+    {name:'Mythril Hook',hold:6.6,decay:.42,cost:1400,lvl:5,col:'#7fe0d0',desc:'Once bitten, never escapes.'}
+  ];
+  const tiers = [
+    {pre:'Heat', col:'#d95a2a', costMul:50, holdMul:1.2, lvl:10},
+    {pre:'Crystal', col:'#5ab3f0', costMul:500, holdMul:1.5, lvl:20},
+    {pre:'Dark', col:'#b06cf0', costMul:5000, holdMul:2, lvl:30},
+    {pre:'Frozen', col:'#63b6ea', costMul:50000, holdMul:2.5, lvl:40},
+    {pre:'Ancient', col:'#ffb545', costMul:500000, holdMul:3.5, lvl:50},
+    {pre:'Mythic', col:'#ff4d4d', costMul:5000000, holdMul:5, lvl:70}
+  ];
+  const suff = ['Hook','Hook','Hook','Hook','Hook','Hook','Hook','Hook'];
+  tiers.forEach((t, ti) => {
+    for(let i=0; i<8; i++) {
+      const hold = Math.ceil((5 + ti*3 + i) * t.holdMul);
+      const decay = Math.max(0.1, 0.8 - (ti*0.1) - (i*0.05));
+      const cost = Math.ceil((500 * Math.pow(1.8, i)) * t.costMul);
+      const lvl = t.lvl + i;
+      hooks.push({name:`${t.pre} ${suff[i]}`, hold, decay, cost, lvl, col:t.col, desc:`Tier ${ti+2} fishing hook.`});
+    }
+  });
+  return hooks;
+}
+
+function generateBaits() {
+  const baits = [
+    {name:'No Bait',mult:1,luck:0,cost:0,desc:'Bare hook. Junk and small fry.', minRar:0, junk:true},
+    {name:'Worm',mult:.8,luck:1,cost:15,desc:'Faster bites, better fish.', minRar:0, junk:true},
+    {name:'Cricket',mult:.6,luck:2,cost:45,desc:'Rare fish start showing up.', minRar:1, junk:false},
+    {name:'Firefly',mult:.45,luck:3,cost:110,desc:'Epic catches glow to it.', minRar:2, junk:false},
+    {name:'Gilded Lure',mult:.32,luck:4,cost:280,desc:'The legends bite. No junk!', minRar:3, junk:false},
+    {name:'Volcanic Lure',mult:.25,luck:5,cost:5000,desc:'Attracts mythical creatures.', minRar:4, junk:false},
+    {name:'Ancient Relic',mult:.15,luck:10,cost:1000000,desc:'The ultimate lure. Mythical bait.', minRar:5, junk:false}
+  ];
+  return baits;
+}
+
+const RODS = generateRods();
+const HOOKS = generateHooks();
+const BAITS = generateBaits();
 const BASKETS=[
-  {name:'Wicker Creel',cap:24,cost:0},
-  {name:'Angler Pack',cap:48,cost:500},
-  {name:'Moonweave Sack',cap:96,cost:1500},
-  {name:'Spirit Tacklebox',cap:999,cost:5000}
+  {name:'Wicker Creel',cap:24,cost:0,lvl:1},
+  {name:'Angler Pack',cap:48,cost:500,lvl:3},
+  {name:'Moonweave Sack',cap:96,cost:1500,lvl:10},
+  {name:'Spirit Tacklebox',cap:248,cost:10000,lvl:25},
+  {name:'Ancient Vault',cap:999,cost:500000,lvl:50}
 ];
+
+const QUESTS = [
+  {id:'q1', name:'First Cast', desc:'Catch your first fish.', check:()=>G.caught>=1, rew:{coins:100,xp:50}},
+  {id:'q2', name:'Getting Rich', desc:'Have 1,000g.', check:()=>G.money>=1000, rew:{coins:500,xp:100}},
+  {id:'q3', name:'Ember Explorer', desc:'Unlock Emberlake.', check:()=>G.permits[1], rew:{coins:5000,xp:500}},
+  {id:'q4', name:'Legendary!', desc:'Catch a Legendary fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===4), rew:{coins:10000,xp:1000}},
+  {id:'q5', name:'Master Angler', desc:'Reach Fishing Level 50.', check:()=>G.lvl>=50, rew:{coins:1000000,xp:0}},
+  {id:'q6', name:'Mythical Hunter', desc:'Catch a Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5), rew:{coins:5000000,xp:5000}}
+];
+
 const ACHIEVEMENTS = [
   { id:'first', name:'First Catch', desc:'Catch your first fish.', check:()=>G.caught>=1 },
-  { id:'rich', name:'Getting Rich', desc:'Have 10,000g.', check:()=>G.money>=10000 },
+  { id:'rich', name:'Getting Rich', desc:'Have 1000g.', check:()=>G.money>=1000 },
   { id:'legend', name:'Legendary!', desc:'Catch a Legendary fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===4) },
-  { id:'mythic', name:'Mythical Angler', desc:'Catch a Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5) },
-  { id:'traveler', name:'World Traveler', desc:'Own all 4 lake permits.', check:()=>G.permits.filter(p=>p).length===4 },
+  { id:'traveler', name:'World Traveler', desc:'Own all 7 lake permits.', check:()=>G.permits.filter(p=>p).length===7 },
   { id:'nightowl', name:'Night Owl', desc:'Catch a night fish.', check:()=>G.nightCatches>0 },
   { id:'snowbird', name:'Snow Bird', desc:'Catch a fish in the snow.', check:()=>G.snowCatches>0 },
-  { id:'social', name:'Fishing Buddies', desc:'Play multiplayer.', check:()=>G.mpPlayed>0 }
-];
-const QUESTS = [
-  {id:'q1', name:'Novice Angler', desc:'Catch 10 fish in Lilypad Lake.', check:()=>G.lakeCatches[0]>=10, reward:200},
-  {id:'q2', name:'Driftwood Regular', desc:'Catch 25 fish in Driftwood Shallows.', check:()=>G.lakeCatches[1]>=25, reward:1500},
-  {id:'q3', name:'Emberlake Explorer', desc:'Catch 25 fish in Emberfall Lake.', check:()=>G.lakeCatches[2]>=25, reward:10000},
-  {id:'q4', name:'Crystal Seeker', desc:'Catch 25 fish in Crystal Cove.', check:()=>G.lakeCatches[3]>=25, reward:50000},
-  {id:'q5', name:'Mythical Hunter', desc:'Catch any Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5), reward:100000},
+  { id:'social', name:'Fishing Buddies', desc:'Play multiplayer.', check:()=>G.mpPlayed>0 },
+  { id:'mythical', name:'Mythical!', desc:'Catch a Mythical fish.', check:()=>G.disc.some(id=>FISH.find(f=>f.id===id)?.rar===5) }
 ];
 
 /* ---------------- state ---------------- */
 let G={money:25,rod:0,hook:0,baits:[0,0,0,0,0,0,0],baitEq:0,basket:[],disc:[],caught:0,lake:0,
-  permits:[true,false,false,false],basketCap:24,weather:'clear',achievements:{},
+  permits:[true,false,false,false,false,false,false],basketCap:24,weather:'clear',achievements:{},
   nightCatches:0,snowCatches:0,mpPlayed:0,name:'',control:'',
-  lakeCatches:[0,0,0,0], quests:{}};
+  xp:0,lvl:1,lakeCatches:[0,0,0,0,0,0,0],quests:{},title:''};
 let started=false,panelOpen=false,popupOpen=false,curTab='sell';
 let weatherTimer = 60;
 
@@ -445,8 +537,9 @@ function buildSprites(){
    px([".........","..jj.....",".jjjj....","jjjjjj...",".Jjjjjjj.","..J..J.J.",".........",".........","........."]),
    px([".........","...cc....","..cwwc...","..wkkw...","...yy....","...yy....",".........",".........","........."]),
    px([".........","..YY.....",".YYYY....",".YY.Y....","....YY...","....ss...",".....s...","....ss...","........."]),
-   px([".........","..rr.....",".rrrr....",".rr.r....","....rr...","....ss...",".....s...","....ss...","........."]),
-   px([".........","..ww.....",".wwww....",".ww.w....","....ww...","....ss...",".....s...","....ss...","........."])];
+   px([".........","...kk....","..kook...",".oRRRo...","..oRo....","...oo....",".........",".........","........."]),
+   px([".........",".ooooo...","oOOOOOo..","oOYYOo...","oOOOOo...",".ooo.....",".........",".........","........."]),
+   px([".........",".qqqqq...","qRRRRq...","qRwwRq...","qRRRRq...",".qqqqq...",".........",".........","........."])];
   SPR.junk={};
   SPR.junk.boot=px(["...ll.......","...ll.......","...ll.......","...ll.......","...xl.......","...ll.......","...llll.....","...llllll...","..llllllll..","..LLLLLLLL..","..LLLLLLLL..","............"]);
   SPR.junk.can=px(["..mmmmmm....",".mMMMMMMm...",".mrrrrm.....",".mrrrrm.....",".mrrrrm.....",".mMMMMMMm...","..mmmmmm....","............"]);
@@ -480,10 +573,14 @@ function makeFish(sp){
   if(sp.pat==='stripes'){t.fillStyle='rgba(25,40,25,.4)';for(let s=0;s<4;s++){const sx=5+s*((L-8)/4);
     for(let i=0;i<2;i++){const x=(sx+i)|0,hf=half(clamp(x,0,L-1));t.fillRect(x,cy-hf+1,1,hf*2-2);}}}
   if(sp.pat==='spots'){t.fillStyle='rgba(240,240,220,.5)';for(let s=0;s<9;s++){
+    const x=2+(rng()*(L-5))|0,hf=half(clamp(x,0,L-1)),y=cy+((rng()*2-1)*hf*.7)|0;t.fillRect(x,y,1,1);}t.fillStyle='rgba(240,240,220,.5)';for(let s=0;s<9;s++){
+    const x=2+(rng()*(L-5))|0,hf=half(clamp(x,0,L-1)),y=cy+((rng()*2-1)*hf*.7)|0;t.fillRect(x,y,1,1);}t.fillStyle='rgba(240,240,220,.5)';for(let s=0;s<9;s++){
     const x=2+(rng()*(L-5))|0,hf=half(clamp(x,0,L-1)),y=cy+((rng()*2-1)*hf*.7)|0;t.fillRect(x,y,1,1);}}
   if(sp.pat==='stripe'){t.fillStyle='rgba(20,35,20,.5)';for(let i=2;i<L-2;i++){const hf=half(i);t.fillRect(i,cy-1,1,3);}}
   if(sp.pat==='scales'){t.fillStyle='rgba(255,255,255,.22)';for(let i=3;i<L-3;i+=2)for(let y=cy-half(i)+2;y<cy+half(i)-1;y+=2)t.fillRect(i,y,1,1);}
   if(sp.pat==='koi'){t.fillStyle=fin;for(let s=0;s<3;s++){const sx=3+(rng()*(L-7))|0,sy=cy+((rng()*2-1)*H*.3)|0;
+    t.fillRect(sx,sy,3,2);t.fillRect(sx+1,sy-1,2,1);}t.fillStyle=fin;for(let s=0;s<3;s++){const sx=3+(rng()*(L-7))|0,sy=cy+((rng()*2-1)*H*.3)|0;
+    t.fillRect(sx,sy,3,2);t.fillRect(sx+1,sy-1,2,1);}t.fillStyle=fin;for(let s=0;s<3;s++){const sx=3+(rng()*(L-7))|0,sy=cy+((rng()*2-1)*H*.3)|0;
     t.fillRect(sx,sy,3,2);t.fillRect(sx+1,sy-1,2,1);}}
   if(sp.pat==='rainbow'){t.fillStyle='rgba(232,122,138,.7)';for(let i=2;i<L-3;i++)t.fillRect(i,cy-1,1,1);
     t.fillStyle='rgba(255,220,150,.6)';for(let i=2;i<L-3;i++)t.fillRect(i,cy,1,1);}
@@ -558,7 +655,7 @@ function genMap(){
   tryPlace(12,1.6,(x,y,r)=>entities.push({k:'bush',x:x*16+8,y:y*16+8,r:r}));
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     if(map[y][x].t==='sand'){let near=false;
-      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[-1,0]]){const nx=x+dx,ny=y+dy;
+      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;
         if(nx>=0&&ny>=0&&nx<MW&&ny<MH&&map[ny][nx].t==='water')near=true;}
       if(near&&rng()<.28)entities.push({k:'cattail',x:x*16+4+rng()*8,y:y*16+6+rng()*6,ph:rng()*6});}}
   entities.push({k:'mara',x:MAT.x*16+8,y:SHOP.y*TS+SHOP.h*TS-6});
@@ -659,12 +756,12 @@ function rollFish(luck){
   const isNight = dayInfo().night > 0.5;
   const isSnow = G.weather === 'snow';
   const isRain = G.weather === 'rain';
-  let junkC = bait.junk ? [.32,.12,.08,.05,.03,.01,.01][baitTier] : 0;
+  let junkC = bait.junk ? [.32,.12,.08,.05,.03][Math.min(4, baitTier)] : 0;
   if(isSnow) junkC = 0;
   if(R()<junkC){
      const j=JUNK[(R()*JUNK.length)|0];
      return {junk:j.id,name:j.name,w:j.w0+R()*(j.w1-j.w0),val:j.val,diff:.15,rar:-1,id:j.id};}
-  let pool = FISH.filter(f => f.lake === G.lake || f.lake === 0);
+  let pool = FISH.filter(f => f.lake === G.lake || (G.lake===0 && f.lake === 0));
   pool = pool.filter(f => !f.time || f.time === 'any' || (isNight ? f.time === 'night' : f.time === 'day'));
   let minRar = bait.minRar || 0;
   if(isSnow) minRar = Math.max(minRar, 2);
@@ -675,18 +772,17 @@ function rollFish(luck){
      let w = RAR[f.rar].w * (1 + luck * RAR[f.rar].aff);
      if(isRain) w *= 0.5;
      if(isSnow && f.rar >= 3) w *= 2.0;
-     if(f.rar === 5) w *= 0.1; // Mythical extremely rare
      tot+=w; return w;});
   let r=R()*tot,pick=pool[0];
   for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0){pick=pool[i];break;}}
   const exp=Math.max(.6,1.25-luck*.1),w=pick.w0+(pick.w1-pick.w0)*Math.pow(R(),exp);
   const t=(w-pick.w0)/(pick.w1-pick.w0);
-  return {id:pick.id,sp:pick,name:pick.name,w,val:Math.max(1,Math.round(pick.val*(.7+.6*t))),diff:pick.diff,rar:pick.rar,lake:pick.lake};}
+  return {id:pick.id,sp:pick,name:pick.name,w,val:Math.max(1,Math.round(pick.val*(.7+.6*t))),diff:pick.diff,rar:pick.rar};}
 function hookFish(){
   if(!fishing||fishing.state!=='bite'||mini)return;
   const bob=fishing;
   const depth=tileAt(bob.tx,bob.ty).depth||1;
-  const luck=BAITS[G.baitEq].luck+depth*.3;
+  const luck=BAITS[G.baitEq].luck+depth*.3+G.lvl*0.1; // Level boosts luck slightly
   const fish=rollFish(luck);
   bob.fish=fish;
   startMini(fish);
@@ -768,19 +864,24 @@ function endMini(result,msg){
   splash(bx,by,10);
   if(result==='catch'&&f){
     sfx.catch();
-    if(f.rar === 5) { sfx.catch(); toast(`★ MYTHICAL CATCH: ${f.name} ★`, '#ff8ae2'); mpBroadcast({t:'mythic',d:{name:G.name,fish:f.name}}); }
+    if(f.rar===5) sfx.mythical(); // Mythical sound
     const isNew=!G.disc.includes(f.id);
     if(isNew)G.disc.push(f.id);
     G.basket.push({id:f.id,name:f.name,w:f.w,val:f.val,rar:f.rar,junk:!!f.junk});
     G.caught++;
-    if(f.lake !== undefined && G.lakeCatches[f.lake] !== undefined) G.lakeCatches[f.lake]++;
-    else G.lakeCatches[G.lake]++;
+    G.lakeCatches[G.lake]++;
+    addXP(f.rar * 25 + Math.floor(f.val / 10));
     if(dayInfo().night > 0.5) G.nightCatches++;
     if(G.weather === 'snow') G.snowCatches++;
     addFloat(player.x,player.y-24,'CAUGHT!','#ffd679');
+    if(f.rar===5) {
+      toast(`★ MYTHICAL CATCH! ★ ${f.name}`,'#ff4d4d');
+      G.title = "Mythical Hunter";
+      mpBroadcast({t:'myth',d:{name:G.name||'Angler',fish:f.name}});
+    }
     mpBroadcast({t:'catch',d:{name:G.name||'Angler',fish:f.name,rar:f.rar}});
     showCatch(f,isNew);
-    fishing=null;mini=null;checkAchievements();save();updateHUD();return;}
+    fishing=null;mini=null;checkAchievements();checkQuests();save();updateHUD();return;}
   if(result==='snap'){sfx.snap();toast('LINE SNAPPED! Too heavy for your rod.','#e07a5a');addFloat(bx,by-12,'SNAP!','#e04747');}
   else{sfx.escape();toast(msg||'It escaped...','#e07a5a');addFloat(bx,by-12,'ESCAPED!','#e04747');}
   fishing=null;mini=null;save();}
@@ -849,7 +950,7 @@ function drawMini(){
   const rc=f.rar<0?'#8a7a5e':RAR[f.rar].c;
   if(mini.run>0){ctx.fillStyle=(mini.tt*10|0)%2?'#ff8a70':'#ffd679';
     ctx.font='14px "Press Start 2P"';ctx.fillText('!! RUN !!',AX,AY-RR*.42);}
-  else{ctx.fillStyle=rc;ctx.font='10px "Press Start 2P"';ctx.fillText('???',AX,AY+4);}
+  else{ctx.fillStyle=rc;ctx.font='10px "Press Start 2P"';ctx.fillText(f.rar===5?'!!! MYTHICAL !!!':'???',AX,AY+4);}
   const mw=RR*1.7,mx0=AX-mw/2,my0=AY+RR+22;
   ctx.textAlign='left';ctx.font='8px "Press Start 2P"';
   ctx.fillStyle='#171008';ctx.fillRect(mx0-3,my0-3,mw+6,12);
@@ -921,7 +1022,7 @@ window.addEventListener('pointerup',()=>{input.hold=false;});
 const gp={moveX:0,moveY:0,act:false,actPrev:false,actEdge:false,backPrev:false,backEdge:false,shopPrev:false,shopEdge:false,anyPrev:false,anyEdge:false,connected:false};
 function pollGamepad(){
   gp.actEdge=gp.backEdge=gp.shopEdge=gp.anyEdge=false;
-  gp.moveX=0;gp.moveY=0;gp.act=false;gp.connected=false;
+  gp.moveX=0;gp.moveY=0;gp.connected=false;
   if(G.control!=='gamepad'||!navigator.getGamepads)return;
   const pads=navigator.getGamepads();let pad=null;
   for(const p of pads)if(p&&p.connected){pad=p;break;}
@@ -990,6 +1091,20 @@ function pressAction(){
 }
 function nearMat(){return Math.hypot(player.x-(MAT.x*TS+8),player.y-(MAT.y*TS+8))<28;}
 
+/* ---------------- XP / Leveling ---------------- */
+function xpForLvl(lvl){ return Math.floor(100 * Math.pow(1.5, lvl-1)); }
+function addXP(amt){
+  G.xp += amt;
+  let needed = xpForLvl(G.lvl);
+  while(G.xp >= needed){
+    G.xp -= needed;
+    G.lvl++;
+    toast(`LEVEL UP! Lv.${G.lvl}`,'#ffd679');
+    sfx.levelup();
+    needed = xpForLvl(G.lvl);
+  }
+}
+
 /* ---------------- HUD / DOM ---------------- */
 const $=id=>document.getElementById(id);
 function iconCv(src,s=2){const c=cnv(src.width*s,src.height*s),x=c.getContext('2d');
@@ -1003,8 +1118,12 @@ function hookIcon(){const c=cnv(14,14),x=c.getContext('2d');x.strokeStyle=HOOKS[
 function basketIcon(){const c=cnv(14,12),x=c.getContext('2d');
   x.fillStyle='#a87c4f';x.fillRect(1,4,12,7);x.fillStyle='#6e4a2a';
   x.fillRect(1,4,12,2);x.fillRect(1,8,12,1);x.fillRect(3,4,1,7);x.fillRect(7,4,1,7);x.fillRect(10,4,1,7);return c;}
+function lvlIcon(){const c=cnv(14,12),x=c.getContext('2d');
+  x.fillStyle='#ffd679';x.beginPath();x.moveTo(7,0);x.lineTo(14,4);x.lineTo(11,12);x.lineTo(3,12);x.lineTo(0,4);x.closePath();x.fill();
+  x.fillStyle='#fff';x.font='8px "Press Start 2P"';x.textAlign='center';x.fillText(G.lvl, 7, 10);return c;}
 function updateHUD(){
-  chip($('chipMoney'),SPR.coin,`${G.money}<span class="sub">g</span>`);
+  chip($('chipMoney'),SPR.coin,`${G.money.toLocaleString()}<span class="sub">g</span>`);
+  chip($('chipLvl'),lvlIcon(),`Lv.${G.lvl} <span class="sub">${G.xp}/${xpForLvl(G.lvl)}xp</span>`);
   const bi=G.baitEq>0?SPR.baitIcons[G.baitEq]:hookIcon();
   chip($('chipBait'),bi,`${BAITS[G.baitEq].name}${G.baitEq>0?' ×'+G.baits[G.baitEq]:''}<span class="sub">[B]</span>`);
   if(G.baitEq===0){const c2=$('chipBait').querySelector('canvas');if(c2)c2.style.opacity=.4;}
@@ -1024,7 +1143,7 @@ function cycleBait(){
   toast(`Bait: ${BAITS[G.baitEq].name}`);}
 function toggleMute(){muted=!muted;if(master)master.gain.value=muted?0:.5;
   $('muteBtn').textContent=muted?'♪ OFF':'♪ ON';save();}
-$('muteBtn').addEventListener('click',toggleMute);
+ $('muteBtn').addEventListener('click',toggleMute);
 
 /* catch popup */
 function showCatch(f,isNew){
@@ -1035,17 +1154,17 @@ function showCatch(f,isNew){
   const cc=$('ccFish'),sc=4;cc.width=src.width*sc;cc.height=src.height*sc;
   const x=cc.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(src,0,0,cc.width,cc.height);
   $('ccName').textContent=f.name;
-  $('ccInfo').textContent=`${f.w.toFixed(f.w<10?2:1)} kg  •  worth ${f.val}g`;
+  $('ccInfo').textContent=`${f.w.toFixed(f.w<10?2:1)} kg  •  worth ${f.val.toLocaleString()}g`;
   $('ccNew').classList.toggle('hidden',!isNew);
   $('catchCard').classList.remove('hidden');
   if(isNew)setTimeout(()=>toast(`★ NEW SPECIES: ${f.name} ★`,'#ffd679'),400);}
 function closeCatch(){if(!popupOpen)return;popupOpen=false;$('catchCard').classList.add('hidden');}
-$('catchCard').addEventListener('click',closeCatch);
+ $('catchCard').addEventListener('click',closeCatch);
 
 /* ---------------- shop ---------------- */
 function openShop(){panelOpen=true;$('shop').classList.remove('hidden');setTab(curTab);sfx.tick();}
 function closeShop(){panelOpen=false;$('shop').classList.add('hidden');}
-$('shopClose').addEventListener('click',closeShop);
+ $('shopClose').addEventListener('click',closeShop);
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 function setTab(t){curTab=t;
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
@@ -1053,7 +1172,7 @@ function setTab(t){curTab=t;
   if(t==='sell')buildSell(body);if(t==='rod')buildGear(body,'rod');
   if(t==='hook')buildGear(body,'hook');if(t==='bait')buildBait(body);
   if(t==='travel')buildTravel(body);if(t==='basket')buildBasket(body);
-  if(t==='bestiary')buildBestiary(body);if(t==='quests')buildQuests(body);if(t==='awards')buildAwards(body);
+  if(t==='quests')buildQuests(body);if(t==='book')buildBook(body);if(t==='awards')buildAwards(body);
   $('pfBest').textContent=`Bestiary ${G.disc.length}/${FISH.length}`;
   $('pfCaught').textContent=`Lifetime catch: ${G.caught}`;}
 function drawFishIcon(c,id,junk){
@@ -1072,7 +1191,7 @@ function buildSell(body){
     const pr=document.createElement('div');pr.className='pr';pr.textContent=it.val+'g';row.appendChild(pr);
     body.appendChild(row);}
   const btn=document.createElement('button');btn.className='btn gold wide';
-  btn.textContent=`SELL ALL — ${total}g`;
+  btn.textContent=`SELL ALL — ${total.toLocaleString()}g`;
   btn.onclick=()=>{G.money+=total;G.basket=[];sfx.coin();toast(`Sold for ${total}g!`,'#ffd679');
     updateHUD();save();setTab('sell');};
   body.appendChild(btn);}
@@ -1086,6 +1205,7 @@ function hookIconCanvas(tier){const c=cnv(22,22),x=c.getContext('2d');
 function buildGear(body,kind){
   const arr=kind==='rod'?RODS:HOOKS,cur=kind==='rod'?G.rod:G.hook;
   for(let i=0;i<arr.length;i++){
+    if(i>0 && arr[i].lvl > G.lvl + 5) continue; // Only show near-level items to prevent infinite scroll
     const card=document.createElement('div');card.className='card'+(i===cur?' cur':'');
     card.appendChild(iconCv(kind==='rod'?rodIconCanvas(i):hookIconCanvas(i),2));
     const info=document.createElement('div');info.className='info';
@@ -1093,13 +1213,14 @@ function buildGear(body,kind){
     const st=document.createElement('div');st.className='cstat';
     st.textContent=kind==='rod'?`Handles fish up to ${arr[i].cap} kg`:`Fish stays hooked ${arr[i].hold}s • escape −${Math.round((1-arr[i].decay)*100)}%`;
     info.appendChild(st);
-    const ds=document.createElement('div');ds.className='cdesc';ds.textContent=arr[i].desc;info.appendChild(ds);
+    const ds=document.createElement('div');ds.className='cdesc';ds.textContent=arr[i].desc + ` (Req: Lv.${arr[i].lvl})`;info.appendChild(ds);
     card.appendChild(info);
     if(i<cur){const tag=document.createElement('div');tag.className='tag own';tag.textContent='OWNED';card.appendChild(tag);}
     else if(i===cur){const tag=document.createElement('div');tag.className='tag cur';tag.textContent='EQUIPPED';card.appendChild(tag);}
-    else if(i===cur+1){const b=document.createElement('button');b.className='btn gold';b.textContent=arr[i].cost+'g';
-      b.disabled=G.money<arr[i].cost;
-      b.onclick=()=>{if(G.money<arr[i].cost){sfx.err();return;}
+    else if(i<=cur+1 || arr[i].lvl<=G.lvl){
+      const b=document.createElement('button');b.className='btn gold';b.textContent=arr[i].cost.toLocaleString()+'g';
+      b.disabled=G.money<arr[i].cost || G.lvl<arr[i].lvl;
+      b.onclick=()=>{if(G.money<arr[i].cost||G.lvl<arr[i].lvl){sfx.err();return;}
         G.money-=arr[i].cost;if(kind==='rod')G.rod=i;else G.hook=i;
         sfx.buy();toast(`Equipped ${arr[i].name}!`,'#9fd0a8');updateHUD();save();setTab(kind);};
       card.appendChild(b);}
@@ -1110,6 +1231,7 @@ function buildGear(body,kind){
   body.appendChild(note);}
 function buildBait(body){
   for(let i=0;i<BAITS.length;i++){
+    if(i>0 && BAITS[i].cost > G.money * 10 && G.baits[i]===0) continue;
     const row=document.createElement('div');row.className='baitrow'+(G.baitEq===i?' eq':'');
     const icon=cnv(18,18),x=icon.getContext('2d');
     if(i===0){x.strokeStyle='#9fb0bd';x.lineWidth=2;x.beginPath();x.moveTo(11,2);x.lineTo(11,10);x.arc(7.5,10,3.5,0,Math.PI*.9);x.stroke();}
@@ -1123,7 +1245,7 @@ function buildBait(body){
     if(i===0){const own=document.createElement('div');own.className='bown';own.textContent='FREE';row.appendChild(own);}
     else{
       const own=document.createElement('div');own.className='bown';own.textContent='×'+G.baits[i];row.appendChild(own);
-      const b=document.createElement('button');b.className='btn';b.textContent='+5 · '+BAITS[i].cost+'g';
+      const b=document.createElement('button');b.className='btn';b.textContent='+5 · '+BAITS[i].cost.toLocaleString()+'g';
       b.disabled=G.money<BAITS[i].cost;
       b.onclick=()=>{if(G.money<BAITS[i].cost){sfx.err();return;}
         G.money-=BAITS[i].cost;G.baits[i]+=5;if(i>G.baitEq)G.baitEq=i;
@@ -1142,30 +1264,17 @@ function applyLake(i,silent){
 function buildTravel(body){
   for(let i=0;i<LAKE_THEMES.length;i++){
     const lake=LAKE_THEMES[i];
-    const req = LAKE_REQS[i];
     const owned=G.permits[i];
     const isHere=G.lake===i;
+    const canUnlock = G.lvl >= lake.reqLvl && G.caught >= lake.reqFish;
     const card=document.createElement('div');
     card.className='card'+(isHere?' cur':'');
-    
-    let reqText = '';
-    let canUnlock = true;
-    
-    if(i > 0) {
-       const prevOwned = G.permits[req.reqLake];
-       const prevCatches = G.lakeCatches[req.reqLake] || 0;
-       if(!prevOwned) { canUnlock = false; reqText += `Requires: ${LAKE_THEMES[req.reqLake].name} Permit<br>`; }
-       if(prevCatches < req.reqCatches) { canUnlock = false; reqText += `Requires: ${req.reqCatches} ${LAKE_THEMES[req.reqLake].name} fish (${prevCatches}/${req.reqCatches})<br>`; }
-       if(G.money < req.cost) { canUnlock = false; reqText += `Requires: ${req.cost}g<br>`; }
-    }
-
-    card.innerHTML=`<div class="info"><div class="cname">${lake.name}</div><div class="cstat">${owned?'Permit Owned':(reqText || 'Free')}</div></div>`;
-    
+    card.innerHTML=`<div class="info"><div class="cname">${lake.name}</div><div class="cstat">${owned?'Permit Owned':`Cost: ${lake.cost.toLocaleString()}g`}</div><div class="cdesc">Req: Lv.${lake.reqLvl} & ${lake.reqFish} Catches</div></div>`;
     if(!owned&&!isHere){
       const b=document.createElement('button');
-      b.className='btn gold';b.textContent=lake.cost+'g';
-      b.disabled=!canUnlock;
-      b.onclick=()=>{if(!canUnlock)return; G.money-=lake.cost;G.permits[i]=true;sfx.buy();checkAchievements();save();setTab('travel');};
+      b.className='btn gold';b.textContent=lake.cost.toLocaleString()+'g';
+      b.disabled=G.money<lake.cost || !canUnlock;
+      b.onclick=()=>{G.money-=lake.cost;G.permits[i]=true;sfx.buy();checkAchievements();checkQuests();save();setTab('travel');};
       card.appendChild(b);
     }else if(owned&&!isHere){
       const b=document.createElement('button');
@@ -1184,83 +1293,55 @@ function buildBasket(body){
     const owned=G.basketCap>=b.cap;
     const card=document.createElement('div');
     card.className='card'+(G.basketCap===b.cap?' cur':'');
-    card.innerHTML=`<div class="info"><div class="cname">${b.name}</div><div class="cstat">Holds ${b.cap} fish</div></div>`;
+    card.innerHTML=`<div class="info"><div class="cname">${b.name}</div><div class="cstat">Holds ${b.cap} fish</div><div class="cdesc">Req: Lv.${b.lvl}</div></div>`;
     if(!owned){
       const btn=document.createElement('button');
-      btn.className='btn gold';btn.textContent=b.cost+'g';
-      btn.disabled=G.money<b.cost;
+      btn.className='btn gold';btn.textContent=b.cost.toLocaleString()+'g';
+      btn.disabled=G.money<b.cost || G.lvl<b.lvl;
       btn.onclick=()=>{G.money-=b.cost;G.basketCap=b.cap;sfx.buy();checkAchievements();save();setTab('basket');updateHUD();};
       card.appendChild(btn);
     }else{
       const tag=document.createElement('div');tag.className='tag own';tag.textContent='OWNED';card.appendChild(tag);}
-    body.appendChild(card);}}
-function buildBestiary(body){
-  for(let lakeIdx=0; lakeIdx<LAKE_THEMES.length; lakeIdx++){
-    const lakeName = LAKE_THEMES[lakeIdx].name;
-    const header = document.createElement('div');
-    header.className='empty';
-    header.style.padding='10px';
-    header.style.marginTop='10px';
-    header.style.background='#4a3018';
-    header.style.color='#ffd679';
-    header.textContent = lakeName;
-    body.appendChild(header);
-
-    const lakeFish = FISH.filter(f => f.lake === lakeIdx);
-    for(const f of lakeFish){
-       const discovered = G.disc.includes(f.id);
-       const row = document.createElement('div');
-       row.className = 'baitrow';
-       
-       const icon = cnv(18,18);
-       const x = icon.getContext('2d');
-       if(discovered){
-          x.imageSmoothingEnabled=false;
-          x.drawImage(SPR.fish[f.id],0,0,18,18);
-       } else {
-          x.fillStyle='#171008'; x.fillRect(0,0,18,18);
-          x.fillStyle='#4a4238'; x.font='10px monospace'; x.fillText('?', 6, 13);
-       }
-       row.appendChild(icon);
-
-       const info = document.createElement('div');
-       info.className='info';
-       const nm = document.createElement('div');
-       nm.className='bname';
-       nm.textContent = discovered ? f.name : '???';
-       nm.style.color = discovered ? RAR[f.rar].c : '#8a7a5e';
-       info.appendChild(nm);
-
-       const ds = document.createElement('div');
-       ds.className='bdesc';
-       ds.textContent = discovered ? `${RAR[f.rar].n} • ${f.val}g` : 'Undiscovered Species';
-       info.appendChild(ds);
-
-       row.appendChild(info);
-       body.appendChild(row);
-    }
-  }
+    body.appendChild(card);}
 }
 function buildQuests(body){
   for(const q of QUESTS){
-    const done = G.quests[q.id] === 'completed';
-    const ready = !done && q.check();
+    const done=G.quests[q.id];
     const row=document.createElement('div');
     row.className='baitrow'+(done?' eq':'');
-    row.innerHTML=`<div class="info"><div class="bname">${done?'✅ ':''}${q.name}</div><div class="bdesc">${q.desc} (Reward: ${q.reward}g)</div></div>`;
-    if(ready){
-       const b=document.createElement('button');
-       b.className='btn gold'; b.textContent='CLAIM';
-       b.onclick=()=>{
-          G.money += q.reward;
-          G.quests[q.id] = 'completed';
-          sfx.coin(); toast(`Quest Complete: ${q.name} (+${q.reward}g)`, '#ffd679');
-          save(); updateHUD(); setTab('quests');
-       };
-       row.appendChild(b);
+    row.innerHTML=`<div class="info"><div class="bname">${done?'✅ ':''}${q.name}</div><div class="bdesc">${q.desc}</div><div class="cdesc" style="color:#ffd679;margin-top:4px">Reward: ${q.rew.coins}g, ${q.rew.xp}xp</div></div>`;
+    if(!done && q.check()){
+      const btn=document.createElement('button');btn.className='btn gold';btn.textContent='CLAIM';
+      btn.onclick=()=>{G.quests[q.id]=true;G.money+=q.rew.coins;addXP(q.rew.xp);sfx.buy();toast(`Quest Complete! +${q.rew.coins}g`,'#ffd679');updateHUD();save();setTab('quests');};
+      row.appendChild(btn);
+    } else if(!done){
+      const tag=document.createElement('div');tag.className='tag lock';tag.textContent='...';row.appendChild(tag);
     }
-    body.appendChild(row);
+    body.appendChild(row);}
+}
+function checkQuests(){
+  for(const q of QUESTS){
+    if(!G.quests[q.id] && q.check()){
+      toast(`Quest Ready: ${q.name}`,'#ffd679');sfx.tick();
+    }
   }
+}
+function buildBook(body){
+  const grid=document.createElement('div');grid.className='bestiary-grid';
+  for(const f of FISH){
+    const slot=document.createElement('div');slot.className='b-slot';
+    const c=cnv(20,20);
+    const src = G.disc.includes(f.id) ? SPR.fish[f.id] : SPR.sil[f.id];
+    const sc=2;c.width=src.width*sc;c.height=src.height*sc;
+    const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(src,0,0,c.width,c.height);
+    slot.appendChild(c);
+    const nm=document.createElement('div');nm.className='b-name';
+    nm.style.color = G.disc.includes(f.id) ? RAR[f.rar].c : '#4a4238';
+    nm.textContent = G.disc.includes(f.id) ? f.name : '???';
+    slot.appendChild(nm);
+    grid.appendChild(slot);
+  }
+  body.appendChild(grid);
 }
 function buildAwards(body){
   for(const a of ACHIEVEMENTS){
@@ -1268,7 +1349,8 @@ function buildAwards(body){
     const row=document.createElement('div');
     row.className='baitrow'+(unlocked?' eq':'');
     row.innerHTML=`<div class="info"><div class="bname">${unlocked?'✅ ':'🔒 '}${a.name}</div><div class="bdesc">${a.desc}</div></div>`;
-    body.appendChild(row);}}
+    body.appendChild(row);}
+}
 function checkAchievements(){
   for(const a of ACHIEVEMENTS){
     if(!G.achievements[a.id]&&a.check()){
@@ -1276,26 +1358,32 @@ function checkAchievements(){
       toast(`🏆 ${a.name}`,'#ffd679');
       sfx.catch();}}}
 
-/* ---------------- save / load (Reset for Expansion) ---------------- */
-const SAVE_KEY = 'lilypad.v3';
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({...G,muted,
+/* ---------------- save / load ---------------- */
+function save(){try{localStorage.setItem('lilypad.rpg',JSON.stringify({...G,muted,
   px:Math.round(player.x),py:Math.round(player.y)}));}catch(e){}}
 function load(){try{
-  let s=JSON.parse(localStorage.getItem(SAVE_KEY));
+  let s=JSON.parse(localStorage.getItem('lilypad.rpg'));
+  if(!s){
+    const old=JSON.parse(localStorage.getItem('lilypad.v2'));
+    if(old&&typeof old.money==='number'){
+      s={...old,lakeCatches:[old.caught||0,0,0,0,0,0,0],xp:0,lvl:1,quests:{},title:'',
+         permits:[old.permits[0]||true,old.permits[1]||false,old.permits[2]||false,old.permits[3]||false,false,false,false]};
+      localStorage.setItem('lilypad.rpg',JSON.stringify(s));
+      setTimeout(()=>toast('Old save restored! 💰','#9fd0a8'),1500);}
+  }
   if(s&&typeof s.money==='number'){
     Object.assign(G,{money:s.money,rod:s.rod,hook:s.hook,
-      baits:s.baits,baitEq:s.baitEq,basket:s.basket,disc:s.disc,caught:s.caught,
-      lake:s.lake||0,permits:s.permits||[true,false,false,false],basketCap:s.basketCap||24,
+      baits:s.baits||[0,0,0,0,0,0,0],baitEq:s.baitEq,basket:s.basket,disc:s.disc,caught:s.caught,
+      lake:s.lake||0,permits:s.permits||[true,false,false,false,false,false,false],basketCap:s.basketCap||24,
       weather:s.weather||'clear',achievements:s.achievements||{},
       nightCatches:s.nightCatches||0,snowCatches:s.snowCatches||0,mpPlayed:s.mpPlayed||0,
       name:s.name||'',control:s.control||'',
-      lakeCatches:s.lakeCatches||[0,0,0,0],quests:s.quests||{}});
-    while(G.baits.length < BAITS.length) G.baits.push(0);
+      xp:s.xp||0,lvl:s.lvl||1,lakeCatches:s.lakeCatches||[0,0,0,0,0,0,0],quests:s.quests||{},title:s.title||''});
     if(s.px)player.x=s.px;if(s.py)player.y=s.py;
     muted=!!s.muted;$('muteBtn').textContent=muted?'♪ OFF':'♪ ON';}
 }catch(e){}}
 
-/* ---------------- MULTIPLAYER (fixed, full sync) ---------------- */
+/* ---------------- MULTIPLAYER (fixed, full sync + gifts) ---------------- */
 const MP={peer:null,conns:new Map(),conn:null,isHost:false,code:'',online:false,myId:null,players:new Map(),sendT:0,timeT:0};
 function mpSetStatus(s){$('mpStatus').textContent=s;}
 function mpMakeCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[(R()*c.length)|0];return s;}
@@ -1377,9 +1465,58 @@ function mpHandle(conn,d){
       toast(`${f.name} caught ${f.fish}!`,col);
       if(f.rar>=2)sfx.catch();}
       break;
-    case 'mythic': toast(`★ ${d.d.name} caught a MYTHICAL ${d.d.fish}! ★`, '#ff8ae2'); sfx.catch(); break;
+    case 'myth':{
+      toast(`★ MYTHICAL! ★ ${d.d.name} caught ${d.d.fish}!`,'#ff4d4d');
+      sfx.mythical();}
+      break;
+    case 'gift':{
+      const g=d.d;
+      if(g.type==='coins'){G.money+=g.amount;toast(`${g.from} gifted you ${g.amount}g!`,'#ffd679');}
+      else if(g.type==='bait'){G.baits[g.idx]+=5;toast(`${g.from} sent you 5 ${BAITS[g.idx].name}!`,'#9fd0a8');}
+      else if(g.type==='rod'){G.rod=g.idx;toast(`${g.from} sent you a ${RODS[g.idx].name}!`,'#9fd0a8');}
+      else if(g.type==='hook'){G.hook=g.idx;toast(`${g.from} sent you a ${HOOKS[g.idx].name}!`,'#9fd0a8');}
+      updateHUD();save();}
+      break;
     case 'bye': MP.players.delete(d.d.id); break;
-  }}
+  }
+}
+
+/* MP Gifting UI */
+ $('mpGift').addEventListener('click',()=>{
+  if(!MP.online){toast('Not connected to MP.','#e07a5a');return;}
+  $('giftModal').classList.remove('hidden');
+  const body=$('giftBody');body.innerHTML='';
+  
+  const playersList = Array.from(MP.players.values());
+  if(playersList.length===0){body.innerHTML='<div class="empty">No other players in room.</div>';return;}
+  
+  const selectP=document.createElement('select');
+  selectP.style.width='100%';selectP.style.marginBottom='10px';selectP.style.padding='8px';
+  playersList.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name||'Player';selectP.appendChild(o);});
+  body.appendChild(selectP);
+  
+  const giftBtn=(label,action)=>{const b=document.createElement('div');b.className='gift-item';b.textContent=label;
+    b.onclick=()=>{const pid=selectP.value;if(!pid)return;action(pid);};body.appendChild(b);};
+    
+  giftBtn('Gift 1,000g',pid=>{
+    if(G.money<1000){toast('Not enough gold.','#e07a5a');return;}
+    G.money-=1000;mpSend(MP.conn||MP.conns.get(pid),{t:'gift',d:{type:'coins',amount:1000,from:G.name||'Angler'}});
+    toast('Gift sent!','#9fd0a8');$('giftModal').classList.add('hidden');updateHUD();save();
+  });
+  giftBtn(`Gift 5x ${BAITS[G.baitEq].name} (Costs 500g)`,pid=>{
+    if(G.money<500){toast('Not enough gold.','#e07a5a');return;}
+    G.money-=500;G.baits[G.baitEq]=Math.max(0,G.baits[G.baitEq]-5);
+    mpSend(MP.conn||MP.conns.get(pid),{t:'gift',d:{type:'bait',idx:G.baitEq,from:G.name||'Angler'}});
+    toast('Bait gifted!','#9fd0a8');$('giftModal').classList.add('hidden');updateHUD();save();
+  });
+  giftBtn(`Gift Equipped Rod (Lv. ${RODS[G.rod].lvl})`,pid=>{
+    if(G.rod===0){toast('Cannot gift starter rod.','#e07a5a');return;}
+    const oldRod=G.rod;G.rod=0;
+    mpSend(MP.conn||MP.conns.get(pid),{t:'gift',d:{type:'rod',idx:oldRod,from:G.name||'Angler'}});
+    toast('Rod gifted!','#9fd0a8');$('giftModal').classList.add('hidden');updateHUD();save();
+  });
+});
+ $('giftClose').addEventListener('click',()=>$('giftModal').classList.add('hidden'));
 
 /* ---------------- update ---------------- */
 let last=performance.now(),hintCache='',now=0;
@@ -1401,7 +1538,8 @@ function update(dt){
       else if(roll<0.50)G.weather='cloudy';
       else G.weather='clear';
       if(old!==G.weather){updateHUD();
-        if(MP.isHost)mpBroadcast({t:'weather',d:{weather:G.weather}});}}
+        if(MP.isHost)mpBroadcast({t:'weather',d:{weather:G.weather}});}
+    }
   }
   if(MP.online&&MP.isHost){
     MP.timeT-=dt;
@@ -1533,7 +1671,8 @@ function drawTree(x2,y2,seed){
   ctx.fillStyle=theme.treeHighlight;
   for(const[bx,by,br]of blobs){ctx.beginPath();ctx.arc(x2+bx-3,y2+by-4,br*.45,0,7);ctx.fill();}
   for(let i=0;i<10;i++){ctx.fillStyle=r()<.5?theme.treeHighlight:'#245a30';
-    ctx.fillRect(x2-14+r()*28,y2-36+r()*26,2,2);}}
+    ctx.fillRect(x2-14+r()*28,y2-36+r()*26,2,2);}
+}
 function drawShopBuilding(){
   const x0=SHOP.x*TS,y0=SHOP.y*TS-4;
   ctx.fillStyle='rgba(20,40,20,.3)';ctx.beginPath();ctx.ellipse(x0+48,y0+84,52,8,0,0,7);ctx.fill();
@@ -1567,7 +1706,8 @@ function drawShopBuilding(){
   ctx.fillStyle=hexLerp('#8a8072','#ffe9b0',glow);ctx.fillRect(x0+87,y0+40,2,4);
   if(di.night>.15){const g=ctx.createRadialGradient(x0+88,y0+42,2,x0+88,y0+42,26);
     g.addColorStop(0,`rgba(255,220,140,${.4*di.night})`);g.addColorStop(1,'rgba(255,220,140,0)');
-    ctx.fillStyle=g;ctx.fillRect(x0+60,y0+16,56,52);}}
+    ctx.fillStyle=g;ctx.fillRect(x0+60,y0+16,56,52);}
+}
 function rodTipAt(x,y,dir){const dx=DIRV[dir][0],dy=DIRV[dir][1];
   return{x:x+dx*10,y:y-8+dy*6-(dir===2?6:0)+(dir===0?4:0)};}
 function drawRodAt(x,y,dir,col){
@@ -1762,26 +1902,23 @@ function rodTip(){return rodTipAt(player.x,player.y,player.dir);}
 buildSprites();load();genMap();initShadows();updateHUD();
 if(!G.control){G.control=(matchMedia('(pointer:coarse)').matches||'ontouchstart'in window)?'touch':'keyboard';}
 if(G.name){$('nameRow').classList.add('hidden');}
-$('nameInput').value=G.name||'';
+ $('nameInput').value=G.name||'';
 updateControlUI();
-$('nameSave').addEventListener('click',()=>{
+ $('nameSave').addEventListener('click',()=>{
   const n=$('nameInput').value.trim();
   if(!n){sfx.err();return;}
   G.name=n.slice(0,12);save();
   $('nameRow').classList.add('hidden');
   toast('Welcome, '+G.name+'!','#9fd0a8');sfx.buy();});
-$('ctlKb').addEventListener('click',()=>{G.control='keyboard';save();updateControlUI();sfx.tick();});
-$('ctlGp').addEventListener('click',()=>{G.control='gamepad';save();updateControlUI();sfx.tick();toast('Gamepad: stick move • ✕ use • ○ back • START shop','#c9a86b');});
-$('ctlTc').addEventListener('click',()=>{G.control='touch';save();updateControlUI();sfx.tick();});
-$('mpHost').addEventListener('click',mpHost);
-$('mpJoin').addEventListener('click',()=>mpJoin($('mpCode').value));
-$('mpLeave').addEventListener('click',mpLeave);
+ $('ctlKb').addEventListener('click',()=>{G.control='keyboard';save();updateControlUI();sfx.tick();});
+ $('ctlGp').addEventListener('click',()=>{G.control='gamepad';save();updateControlUI();sfx.tick();toast('Gamepad: stick move • ✕ use • ○ back • START shop','#c9a86b');});
+ $('ctlTc').addEventListener('click',()=>{G.control='touch';save();updateControlUI();sfx.tick();});
+ $('mpHost').addEventListener('click',mpHost);
+ $('mpJoin').addEventListener('click',()=>mpJoin($('mpCode').value));
+ $('mpLeave').addEventListener('click',mpLeave);
 (()=>{const tf=$('titleFish');
-  for(const id of['trout','koi','bass']){
-    const f = FISH.find(x=>x.id===id);
-    if(!f) continue;
-    const img=new Image();
-    img.src=SPR.fish[f.id].toDataURL();img.width=SPR.fish[f.id].width*3;tf.appendChild(img);}})();
+  for(const id of['trout','koi','bass']){const img=new Image();
+    img.src=SPR.fish[id].toDataURL();img.width=SPR.fish[id].width*3;tf.appendChild(img);}})();
 if(document.fonts&&document.fonts.load)document.fonts.load('8px "Press Start 2P"');
 function startGame(){
   if(started)return;
@@ -1794,8 +1931,8 @@ function startGame(){
   updateControlUI();
   tone(523,.12,'triangle',.15);tone(784,.16,'triangle',.15,0,.12);
   toast('Welcome to Lilypad Lake, '+G.name+'!','#9fd0a8');}
-$('startBtn').addEventListener('click',e=>{e.stopPropagation();startGame();});
-$('title').addEventListener('click',e=>{if(e.target.id==='title')startGame();});
+ $('startBtn').addEventListener('click',e=>{e.stopPropagation();startGame();});
+ $('title').addEventListener('click',e=>{if(e.target.id==='title')startGame();});
 
 function frame(ts){
   now=ts;let dt=(ts-last)/1000;last=ts;dt=Math.min(dt,.05);
@@ -1803,7 +1940,7 @@ function frame(ts){
   if(!started){
     if(gp.anyEdge)startGame();
   }else{
-    if(gp.backEdge){ if(popupOpen)closeCatch(); else if(panelOpen)closeShop(); }
+    if(gp.backEdge){ if(popupOpen)closeCatch(); else if(panelOpen)closeShop(); else $('giftModal').classList.add('hidden'); }
     else if(gp.shopEdge){ if(popupOpen)closeCatch(); else if(panelOpen)closeShop(); else openShop(); }
     else if(gp.actEdge){ if(popupOpen)closeCatch(); else if(!panelOpen)pressAction(); }
     if(started&&!panelOpen&&!popupOpen)update(dt);
