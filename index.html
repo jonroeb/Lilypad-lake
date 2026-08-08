@@ -416,7 +416,7 @@ function generateRods() {
   const suff = ['Rod','Branch','Pole','Cane','Staff','Wand','Scepter','Blade'];
   tiers.forEach((t, ti) => {
     for(let i=0; i<8; i++) {
-      const cap = Math.ceil((10 + ti*10 + i*5) * t.capMul);
+      const cap = Math.ceil((45 + ti*20 + i*15) * t.capMul); 
       const cost = Math.ceil((1000 * Math.pow(1.8, i)) * t.costMul);
       const lvl = t.lvl + i;
       rods.push({name:`${t.pre} ${suff[i]}`, cap, cost, lvl, col:t.col, desc:`Tier ${ti+2} fishing rod.`});
@@ -443,7 +443,7 @@ function generateHooks() {
   const suff = ['Hook','Hook','Hook','Hook','Hook','Hook','Hook','Hook'];
   tiers.forEach((t, ti) => {
     for(let i=0; i<8; i++) {
-      const hold = Math.ceil((5 + ti*3 + i) * t.holdMul);
+      const hold = Math.ceil((8 + ti*4 + i*2) * t.holdMul); 
       const decay = Math.max(0.1, 0.8 - (ti*0.1) - (i*0.05));
       const cost = Math.ceil((500 * Math.pow(1.8, i)) * t.costMul);
       const lvl = t.lvl + i;
@@ -1361,27 +1361,60 @@ function checkAchievements(){
 /* ---------------- save / load ---------------- */
 function save(){try{localStorage.setItem('lilypad.rpg',JSON.stringify({...G,muted,
   px:Math.round(player.x),py:Math.round(player.y)}));}catch(e){}}
-function load(){try{
-  let s=JSON.parse(localStorage.getItem('lilypad.rpg'));
-  if(!s){
-    const old=JSON.parse(localStorage.getItem('lilypad.v2'));
-    if(old&&typeof old.money==='number'){
-      s={...old,lakeCatches:[old.caught||0,0,0,0,0,0,0],xp:0,lvl:1,quests:{},title:'',
-         permits:[old.permits[0]||true,old.permits[1]||false,old.permits[2]||false,old.permits[3]||false,false,false,false]};
-      localStorage.setItem('lilypad.rpg',JSON.stringify(s));
-      setTimeout(()=>toast('Old save restored! 💰','#9fd0a8'),1500);}
+function load(){
+  try {
+    let s = localStorage.getItem('lilypad.rpg');
+    if(!s) {
+      // Try migrating from v2 if rpg doesn't exist
+      let old = localStorage.getItem('lilypad.v2');
+      if(old) {
+        let o = JSON.parse(old);
+        s = JSON.stringify({
+          money: o.money || 25, rod: o.rod || 0, hook: o.hook || 0, baits: o.baits || [0,0,0,0,0,0,0], baitEq: o.baitEq || 0,
+          basket: o.basket || [], disc: o.disc || [], caught: o.caught || 0, lake: o.lake || 0,
+          permits: o.permits || [true,false,false,false,false,false,false], basketCap: o.basketCap || 24, weather: o.weather || 'clear',
+          achievements: o.achievements || {}, nightCatches: o.nightCatches || 0, snowCatches: o.snowCatches || 0, mpPlayed: o.mpPlayed || 0,
+          name: o.name || '', control: o.control || '', xp: o.xp || 0, lvl: o.lvl || 1, lakeCatches: [o.caught||0,0,0,0,0,0,0], quests: {}, title: ''
+        });
+      }
+    }
+    
+    if(s) {
+      let p = JSON.parse(s);
+      // Use fallbacks for EVERY property to prevent data wipes on update
+      G.money = p.money ?? 25;
+      G.rod = p.rod ?? 0;
+      G.hook = p.hook ?? 0;
+      G.baits = p.baits || [0,0,0,0,0,0,0];
+      G.baitEq = p.baitEq ?? 0;
+      G.basket = p.basket || [];
+      G.disc = p.disc || [];
+      G.caught = p.caught ?? 0;
+      G.lake = p.lake ?? 0;
+      G.permits = p.permits || [true,false,false,false,false,false,false];
+      G.basketCap = p.basketCap ?? 24;
+      G.weather = p.weather || 'clear';
+      G.achievements = p.achievements || {};
+      G.nightCatches = p.nightCatches ?? 0;
+      G.snowCatches = p.snowCatches ?? 0;
+      G.mpPlayed = p.mpPlayed ?? 0;
+      G.name = p.name || '';
+      G.control = p.control || '';
+      G.xp = p.xp ?? 0;
+      G.lvl = p.lvl ?? 1;
+      G.lakeCatches = p.lakeCatches || [0,0,0,0,0,0,0];
+      G.quests = p.quests || {};
+      G.title = p.title || '';
+      
+      if(p.px) player.x = p.px;
+      if(p.py) player.y = p.py;
+      muted = !!p.muted;
+      $('muteBtn').textContent = muted ? '♪ OFF' : '♪ ON';
+    }
+  } catch(e) { 
+    console.error("Save load error, starting fresh:", e);
   }
-  if(s&&typeof s.money==='number'){
-    Object.assign(G,{money:s.money,rod:s.rod,hook:s.hook,
-      baits:s.baits||[0,0,0,0,0,0,0],baitEq:s.baitEq,basket:s.basket,disc:s.disc,caught:s.caught,
-      lake:s.lake||0,permits:s.permits||[true,false,false,false,false,false,false],basketCap:s.basketCap||24,
-      weather:s.weather||'clear',achievements:s.achievements||{},
-      nightCatches:s.nightCatches||0,snowCatches:s.snowCatches||0,mpPlayed:s.mpPlayed||0,
-      name:s.name||'',control:s.control||'',
-      xp:s.xp||0,lvl:s.lvl||1,lakeCatches:s.lakeCatches||[0,0,0,0,0,0,0],quests:s.quests||{},title:s.title||''});
-    if(s.px)player.x=s.px;if(s.py)player.y=s.py;
-    muted=!!s.muted;$('muteBtn').textContent=muted?'♪ OFF':'♪ ON';}
-}catch(e){}}
+}
 
 /* ---------------- MULTIPLAYER (fixed, full sync + gifts) ---------------- */
 const MP={peer:null,conns:new Map(),conn:null,isHost:false,code:'',online:false,myId:null,players:new Map(),sendT:0,timeT:0};
